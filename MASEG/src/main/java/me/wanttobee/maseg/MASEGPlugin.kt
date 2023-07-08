@@ -7,12 +7,8 @@ import me.wanttobee.maseg.systems.games.bingo.BingoSystem
 import me.wanttobee.maseg.systems.games.manHunt.ManHuntSystem
 import me.wanttobee.maseg.systems.utils.interactiveInventory.InteractiveInventorySystem
 import me.wanttobee.maseg.systems.utils.interactiveItem.InteractiveItemSystem
-import me.wanttobee.maseg.systems.utils.playerCompass.PlayerCompassSystem
 import me.wanttobee.maseg.systems.utils.playerTracker.PlayerTrackerSystem
 import me.wanttobee.maseg.systems.utils.randomPlayer.RandomPlayerSystem
-import org.bukkit.World
-import org.bukkit.WorldCreator
-import org.bukkit.WorldType
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.java.annotation.command.Command
 import org.bukkit.plugin.java.annotation.command.Commands
@@ -53,7 +49,6 @@ class MASEGPlugin : JavaPlugin() {
 
         server.pluginManager.registerEvents(ManHuntSystem, this)
         server.pluginManager.registerEvents(BingoSystem, this)
-        server.pluginManager.registerEvents(PlayerCompassSystem, this)
         server.pluginManager.registerEvents(InteractiveInventorySystem, this)
         server.pluginManager.registerEvents(InteractiveItemSystem, this)
 

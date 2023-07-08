@@ -1,19 +1,19 @@
 package me.wanttobee.maseg.systems.utils.randomPlayer
 
 import me.wanttobee.maseg.MASEGPlugin
-import me.wanttobee.maseg.systems.utils.playerCompass.PlayerCompassSystem
+import me.wanttobee.maseg.systems.utils.teams.Team
+import org.apache.commons.lang.mutable.Mutable
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
 import kotlin.math.pow
-import java.util.Random
 import kotlin.math.cos
 import kotlin.math.sin
 
 object RandomPlayerSystem {
-    val version = "v1.1 Random Player"
+    val version = "v2.0 Random Player"
     private val plugin = MASEGPlugin.instance
 
     private const val pauseTicks: Int = 4
@@ -22,82 +22,89 @@ object RandomPlayerSystem {
     private val jump: (Float) -> Float = { t -> (-(t * 2f - 1f).pow(2) + height) + 1.8f }
     private const val morePlayersJump = 2
 
-    fun doRandomPlayerProcess( iterationsLeft : Int, amountOfPlayer:Int, dontPick : Array<Player>, startAt: Player?, winningProcess : ((Array<Player>) -> Unit)? = null){
-        return this.doRandomPlayerProcess(iterationsLeft,amountOfPlayer,dontPick,startAt,winningProcess, arrayOf())
-    }
 
-    private fun doRandomPlayerProcess( iterationsLeft : Int, amountOfPlayer:Int, dontPick : Array<Player>, startAt: Player?, winningProcess : ((Array<Player>) -> Unit)? = null, alreadyChosen: Array<Player>){
-        if(amountOfPlayer == 0)return
-        val pitch = if(iterationsLeft == 0) 0.5f else 0.5f + 7f/iterationsLeft
-        val allPlayers = plugin.server.onlinePlayers.filter { player -> !dontPick.contains(player) && !alreadyChosen.contains(player) }
-        var t = 0.0f
-        var currentTick = 0
-        var taskID = -1
-        // if there are no more other players, it doest really matter because these will always be choice, might as well just skip to it
-        if( allPlayers.size <= amountOfPlayer - alreadyChosen.size){
-            for(p in allPlayers)
-                selectPlayer(p, winningProcess == null)
-            for(p in alreadyChosen)
-                selectPlayer(p, winningProcess == null)
 
-            finishSelectedPlayers(allPlayers.toTypedArray() + alreadyChosen,winningProcess)
+    fun choseRandomTeam(commander:Player, amount : Int, winningProcess : ((Team) -> Unit)? = null){ return choseRandomTeam(commander,amount,plugin.server.onlinePlayers,winningProcess ) }
+    fun choseRandomTeam(commander:Player, amount : Int, playerPool : Collection<Player>, winningProcess : ((Team) -> Unit)? = null){
+        val noDuplicateList : MutableList<Player> = mutableListOf()
+        for(player in playerPool){
+            if(!noDuplicateList.contains(player))
+                noDuplicateList.add(player)
+        }
+        if(amount <= 0 ) {
+            commander.sendMessage("${ChatColor.RED} something went wrong, trying to randomize 0 players")
             return
         }
-        val currentRandomPlayer = startAt ?: allPlayers.elementAt(Random().nextInt(allPlayers.size))
-        val modifiedList = allPlayers.filter { player -> player != currentRandomPlayer }
-        val nextRandomPlayer: Player = modifiedList.elementAt(Random().nextInt(modifiedList.size))
+        if(amount > noDuplicateList.size ){
+            commander.sendMessage("${ChatColor.RED} something went wrong, trying to chose ${ChatColor.GRAY}$amount${ChatColor.RED} out of the total ${ChatColor.GRAY}${noDuplicateList.size}")
+            return
+        }
+        recursiveRandomTeam(Team(ChatColor.WHITE),amount, noDuplicateList.random() , noDuplicateList, winningProcess, (Math.random()*6).toInt() + 2)
+    }
 
+    private fun recursiveRandomTeam(team : Team, amountLeft : Int, jumpFrom : Player, playerPool : Collection<Player>,winningProcess : ((Team) -> Unit)?, iterationsLeft : Int ){
+        if(amountLeft == playerPool.size) {
+            for(p in playerPool)
+                defaultChoseEffect(p, winningProcess == null)
+            team.addMember(playerPool)
+            chosenTeam(team,winningProcess)
+            return
+        }
+        plugin.server.onlinePlayers.forEach { op ->
+            op.playSound(jumpFrom, Sound.BLOCK_AMETHYST_BLOCK_HIT, SoundCategory.MASTER, 1f, 1f)
+            op.playSound(jumpFrom, Sound.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.MASTER, 1f, 1f)
+            op.playSound(jumpFrom, Sound.BLOCK_BEEHIVE_DRIP, SoundCategory.MASTER, 1f, 1f)
+        }
+        val nextPlayer = playerPool.filter { player -> player != jumpFrom }.random()
 
-        val task = {
-            t = ((currentTick++).toFloat() / animationTicks.toFloat())
-            animateStep(t, currentRandomPlayer.location, nextRandomPlayer.location)
-            if (t >= 0.999f) {
-                currentRandomPlayer.removePotionEffect(PotionEffectType.GLOWING)
-                nextRandomPlayer.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, animationTicks *20, 0))
-                for(p in alreadyChosen){
-                    p.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, animationTicks *20, 0))
+        var currentTick = 0
+        var taskID = -1
+
+        val task =  task@ {
+            val t = ((currentTick++).toFloat() / animationTicks.toFloat())
+            animateStep(t, jumpFrom.location, nextPlayer.location)
+            if (t < 0.999f) return@task
+            if(!team.containsMember(jumpFrom)) jumpFrom.removePotionEffect(PotionEffectType.GLOWING)
+            nextPlayer.addPotionEffect(PotionEffect(PotionEffectType.GLOWING, animationTicks *20, 0))
+
+            if(iterationsLeft <= 0){
+                team.addMember(nextPlayer)
+                defaultChoseEffect(nextPlayer,winningProcess==null )
+                if(amountLeft - 1 == 0){
+                    chosenTeam(team,winningProcess)
                 }
-
-                //if the fake iterations are not done yet
-                if(iterationsLeft > 1){
-                    plugin.server.scheduler.scheduleSyncDelayedTask(
-                            plugin,
-                            {   plugin.server.onlinePlayers.forEach { op ->
-                                  op.playSound(nextRandomPlayer, Sound.BLOCK_AMETHYST_BLOCK_HIT, SoundCategory.MASTER, 1f, pitch)
-                                  op.playSound(nextRandomPlayer, Sound.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.MASTER, 1f, pitch)
-                                  op.playSound(nextRandomPlayer, Sound.BLOCK_BEEHIVE_DRIP, SoundCategory.MASTER, 1f, pitch)
-                                }
-                                doRandomPlayerProcess( (iterationsLeft - 1),amountOfPlayer, dontPick,nextRandomPlayer, winningProcess, alreadyChosen) },
-                            pauseTicks.toLong()
-                    )
-                }
-                //if the fake iterations are done
                 else{
-                    val newAlreadyChose = alreadyChosen + nextRandomPlayer
-                    selectPlayer(nextRandomPlayer, winningProcess == null)
-                    plugin.server.scheduler.scheduleSyncDelayedTask(
-                            plugin,
-                            {
-                                if(newAlreadyChose.size >= amountOfPlayer) finishSelectedPlayers(newAlreadyChose, winningProcess)
-                                else {
-                                    plugin.server.onlinePlayers.forEach { op ->
-                                        op.playSound(nextRandomPlayer, Sound.BLOCK_AMETHYST_BLOCK_HIT, SoundCategory.MASTER, 1f, pitch)
-                                        op.playSound(nextRandomPlayer, Sound.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.MASTER, 1f, pitch)
-                                        op.playSound(nextRandomPlayer, Sound.BLOCK_BEEHIVE_DRIP, SoundCategory.MASTER, 1f, pitch)
-                                    }
-                                    doRandomPlayerProcess(morePlayersJump, amountOfPlayer, dontPick, nextRandomPlayer, winningProcess, newAlreadyChose)
-                                } },
-                            pauseTicks.toLong()
-                    )
+                    plugin.server.scheduler.scheduleSyncDelayedTask(plugin,
+                        {  recursiveRandomTeam(team, amountLeft-1, nextPlayer,
+                            playerPool.filter { player -> player != nextPlayer },
+                            winningProcess, morePlayersJump ) },
+                        pauseTicks.toLong())
                 }
-
-                plugin.server.scheduler.cancelTask(taskID)
             }
+            else{
+                plugin.server.scheduler.scheduleSyncDelayedTask(plugin,
+                    {  recursiveRandomTeam(team, amountLeft, nextPlayer, playerPool, winningProcess, iterationsLeft-1 ) },
+                    pauseTicks.toLong())
+            }
+            plugin.server.scheduler.cancelTask(taskID)
         }
         taskID = plugin.server.scheduler.scheduleSyncRepeatingTask(plugin, task , 0 ,1)
     }
 
-    private fun selectPlayer(p : Player, title: Boolean){
+    private fun chosenTeam(team: Team, winningProcess : ((Team) -> Unit)?){
+        team.applyToMembers { member ->
+            plugin.server.onlinePlayers.forEach{ player ->
+                player.playSound(member, Sound.BLOCK_BEACON_POWER_SELECT, SoundCategory.MASTER, 1f, 1f)
+                player.playSound(member, Sound.BLOCK_BELL_RESONATE, SoundCategory.MASTER, 1f, 1f)
+                player.playSound(member, Sound.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.MASTER, 1f, 1f)
+            }
+        }
+        if (winningProcess != null)
+            winningProcess(team)
+    }
+
+
+    private fun defaultChoseEffect(p : Player, title: Boolean){
         // 1. particles
         val particleCount = 100
         val particleRadius = 1.0
@@ -126,20 +133,6 @@ object RandomPlayerSystem {
         }
     }
 
-    private fun finishSelectedPlayers(players: Array<Player>, after: ((Array<Player>) -> Unit)?) {
-        for(p in players){
-            plugin.server.onlinePlayers.forEach{ op ->
-                op.playSound(p, Sound.BLOCK_BEACON_POWER_SELECT, SoundCategory.MASTER, 1f, 1f)
-                op.playSound(p, Sound.BLOCK_BELL_RESONATE, SoundCategory.MASTER, 1f, 1f)
-                op.playSound(p, Sound.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.MASTER, 1f, 1f)
-            }
-        }
-        if (after != null) {
-            after(players)
-        }
-    }
-
-
     private fun animateStep(t: Float, start: Location, end: Location) {
         val world: World = start.world!!
         val particleType: Particle = Particle.REDSTONE // Use the appropriate particle type for a white dust particle
@@ -152,6 +145,4 @@ object RandomPlayerSystem {
         val particleLocation = Location(world, interpolatedX, interpolatedY, interpolatedZ)
         world.spawnParticle(particleType, particleLocation, 4,particleData)
     }
-
-
 }

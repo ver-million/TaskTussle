@@ -9,24 +9,12 @@ interface ICommandSystem : IPlayerCommands {
     val systemCommands : Array<ISystemCommand>
 
     override fun onCommand(sender: Player, args: Array<String>): Boolean {
-        var checkAliases = true;
         for(sysCom in systemCommands){
-            if (sysCom.key.lowercase() == args[0]) {
-                sysCom.onCommand(sender, args.copyOfRange(1, args.size))
-                checkAliases = false
+            if (sysCom.baseTree.arg.lowercase() == args.first()) {
+                sysCom.baseTree.onCommand(sender, args.copyOfRange(1, args.size))
                 break
             }
         }
-
-        if(checkAliases){
-            for(sysCom in systemCommands){
-                if (sysCom.aliases.contains(args[0])) {
-                    sysCom.onCommand(sender, args.copyOfRange(1, args.size))
-                    break
-                }
-            }
-        }
-
         return true
     }
 
@@ -34,7 +22,7 @@ interface ICommandSystem : IPlayerCommands {
         sender.sendMessage("$title $helpText")
         val helperTab : (String)-> String = { h -> "${ChatColor.YELLOW}$h${ChatColor.WHITE}"}
         for(sysCom in systemCommands){
-            sender.sendMessage("- ${helperTab(sysCom.key + ":")} ${sysCom.helpText} ${ChatColor.GRAY}${sysCom.exampleCommand}")
+            sender.sendMessage("- ${helperTab(sysCom.baseTree.arg + ":")} ${sysCom.helpText} ${ChatColor.GRAY}${sysCom.exampleCommand}")
         }
     }
 
@@ -43,15 +31,15 @@ interface ICommandSystem : IPlayerCommands {
 
         if(args.size == 1){
             for(sysCom in systemCommands){
-                if(sysCom.key.lowercase().startsWith(args[0]))
-                    list.add(sysCom.key)
+                if(sysCom.baseTree.arg.lowercase().startsWith(args.first()))
+                    list.add(sysCom.baseTree.arg)
             }
             return list
         }
 
         for(sysCom in systemCommands){
-            if(sysCom.key.lowercase() == args[0])
-                return sysCom.onTabComplete(sender, args.copyOfRange(1, args.size) )
+            if(sysCom.baseTree.arg.lowercase() == args.first())
+                return sysCom.baseTree.getTabComplete(sender, args.copyOfRange(1, args.size) )
         }
         return list
     }

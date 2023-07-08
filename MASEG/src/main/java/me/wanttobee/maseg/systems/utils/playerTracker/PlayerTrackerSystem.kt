@@ -1,11 +1,7 @@
 package me.wanttobee.maseg.systems.utils.playerTracker
 
-import me.wanttobee.maseg.systems.utils.playerCompass.PlayerCompassData
-import me.wanttobee.maseg.systems.utils.playerCompass.PlayerCompassSystem
 import me.wanttobee.maseg.systems.utils.teams.Team
-import org.bukkit.Location
 import org.bukkit.entity.Player
-import java.util.*
 
 //this took ages to make right, but I think its cool now
 //trust me, you don't want to see the code of v1, it's horrible
@@ -31,7 +27,7 @@ object PlayerTrackerSystem {
    }
 
 
-    fun getTracker(p : Player, id:Int) : Boolean{
+    fun giveTracker(p : Player, id:Int) : Boolean{
         if(!trackers.containsKey(id)) return false
         trackers[id]?.givePlayerItem(p)
         return true

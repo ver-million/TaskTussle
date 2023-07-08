@@ -1,5 +1,6 @@
 package me.wanttobee.maseg.systems.utils.teams
 
+import me.wanttobee.maseg.MASEGPlugin
 import org.bukkit.ChatColor
 import org.bukkit.conversations.BooleanPrompt
 import org.bukkit.entity.Player
@@ -25,19 +26,24 @@ class Team(private val color: ChatColor) {
     fun getMembers() : List<Player>{
         return members.toList()
     }
+    fun addMember(players:Collection<Player>){
+        for(p in players)
+            this.addMember(p)
+    }
     fun addMember(p : Player){
         if(members.contains(p)) return
         members.add(p)
         p.setDisplayName("$color${p.name}${ChatColor.RESET}")
-        for(ob in observers)
+        for(ob in observers.toList()) //its already a list, but the toList creates a clone, so in the can modify the observer list without messing with this current loop
             ob.onAddMember(p)
     }
     fun removeMember(p: Player) : Boolean{
-        p.setDisplayName(p.name)
         val done = members.remove(p)
-        if(done)
-            for(ob in observers)
+        if(done){
+            p.setDisplayName(p.name)//resetting the name (so any color gets removed)
+            for(ob in observers.toList())
                 ob.onRemoveMember(p)
+        }
         return done
     }
     fun containsMember(p : Player) : Boolean{

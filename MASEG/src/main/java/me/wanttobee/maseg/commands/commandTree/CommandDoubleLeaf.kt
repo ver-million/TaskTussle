@@ -3,7 +3,9 @@ package me.wanttobee.maseg.commands.commandTree
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 
-class CommandDoubleLeaf(arg : String, private val min:Double?, private val max:Double?,  effect : (Player, Double) -> Unit,emptyEffect : ((Player) -> Unit)? = null ) : ICommandLeaf<Double>(arg,effect, emptyEffect) {
+class CommandDoubleLeaf private constructor(arg : String,private val realTimeMin : (() -> Double)?,private val realTimeMax : (() -> Double)?, private val min:Double?, private val max:Double?,  effect : (Player, Double) -> Unit,emptyEffect : ((Player) -> Unit)? = null ) : ICommandLeaf<Double>(arg,effect, emptyEffect) {
+    constructor(arg : String, min:Double?, max:Double?,  effect : (Player, Double) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,null, null, min, max, effect, emptyEffect)
+    constructor(arg : String, min:(() -> Double)?, max:(() -> Double)?,  effect : (Player, Double) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,min, max, null, null, effect, emptyEffect)
 
     override fun validateValue(sender: Player, tailArgs: Array<String>): Double? {
         if(tailArgs.first() == ".."){
@@ -15,6 +17,7 @@ class CommandDoubleLeaf(arg : String, private val min:Double?, private val max:D
             sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}is not a valid number ${ChatColor.DARK_RED}(Double)")
             return  null
         }
+
         if(min != null && number < min){
             number = min
             sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}has been clamped to ${ChatColor.GRAY}$min")
@@ -23,15 +26,27 @@ class CommandDoubleLeaf(arg : String, private val min:Double?, private val max:D
             number = max
             sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}has been clamped to ${ChatColor.GRAY}$max")
         }
+        else if(realTimeMin != null && number < realTimeMin.invoke()){
+            number = realTimeMin.invoke()
+            sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}has been clamped to ${ChatColor.GRAY}${realTimeMin.invoke()}")
+        }
+        else if(realTimeMax != null && number > realTimeMax.invoke()){
+            number = realTimeMax.invoke()
+            sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}has been clamped to ${ChatColor.GRAY}${realTimeMax.invoke()}")
+        }
         return number
     }
 
     override fun thisTabComplete(sender: Player, currentlyTyping: String): List<String> {
         val list = mutableListOf<String>()
-        if (min == null && max == null) {
+        if (min == null && max == null && realTimeMin == null && realTimeMax == null) {
             if ("" == currentlyTyping)
                 list.add("..")
-        } else if (min == null) {
+            return list
+        }
+        val min = min ?: realTimeMin?.invoke()
+        val max = max ?: realTimeMax?.invoke()
+        if (min == null) {
             if ("" == currentlyTyping) {
                 list.add("..")
                 list.add((max).toString())

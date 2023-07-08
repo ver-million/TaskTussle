@@ -203,6 +203,7 @@ class PlayerTracker(private val tracking : Team, private val refreshTime: Int,pr
         if(closestTaskID != -1)
             plugin.server.scheduler.cancelTask(closestTaskID)
         closestTaskID = -1
+        tracking.unsubscribe(this)
     }
 
 
@@ -216,8 +217,11 @@ class PlayerTracker(private val tracking : Team, private val refreshTime: Int,pr
             iItem.doRefresh()
     }
     override fun onRemoveMember(member: Player) {
-        for(iItem in interactiveItems)
-            iItem.doRefresh()
+        if(tracking.getMembers().isEmpty())
+            stopTracking()
+        else
+            for(iItem in interactiveItems)
+                iItem.doRefresh()
     }
 
     override fun toString(): String {

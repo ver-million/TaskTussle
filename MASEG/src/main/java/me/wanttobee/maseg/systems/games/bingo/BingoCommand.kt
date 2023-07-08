@@ -7,11 +7,9 @@ import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 
 object BingoCommand : ISystemCommand {
+    private val plugin = MASEGPlugin.instance
     override val exampleCommand = "/mg bingo "
     override val helpText = "bingo yea"
-    override val key = "bingo"
-    override val aliases = arrayOf<String>()
-
 
     private val settingsTree = CommandTree("setting",arrayOf(
         CommandStringLeaf("winCondition", BingoSystem.possibleConditions,
@@ -67,15 +65,11 @@ object BingoCommand : ISystemCommand {
     )
 
 
-    private val bingoTree = CommandTree("Bingo", arrayOf(
+    override val baseTree = CommandTree("Bingo", arrayOf(
         startTree,
         stopTree,
         fileTree,
         settingsTree,
     ))
 
-
-
-    override fun onCommand(sender: Player, args : Array<String>) { bingoTree.onCommand(sender, args) }
-    override fun onTabComplete(sender: Player,  args : Array<String>) : List<String> { return bingoTree.getTabComplete(sender, args) }
 }

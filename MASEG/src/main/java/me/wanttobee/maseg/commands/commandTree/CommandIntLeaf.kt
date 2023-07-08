@@ -3,12 +3,13 @@ package me.wanttobee.maseg.commands.commandTree
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 
-class CommandIntLeaf private constructor(arg : String, private val min:Int?,private val max:Int?, private val possibilities : Collection<Int>?, effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : ICommandLeaf<Int>(arg,effect, emptyEffect) {
-    constructor(arg : String,min:Int?, max:Int?, effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,min, max,null, effect, emptyEffect )
-    constructor(arg : String, possibilities:Collection<Int>?, effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,null, null,possibilities, effect, emptyEffect )
+class CommandIntLeaf private constructor(arg : String,private val realTimeMin : (() -> Int)?,private val realTimeMax : (() -> Int)?, private val min:Int?,private val max:Int?,private val realTimePossibilities : (() -> Collection<Int>)?, private val possibilities : Collection<Int>?, effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : ICommandLeaf<Int>(arg,effect, emptyEffect) {
+    constructor(arg : String,min:Int?, max:Int?, effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,null,null,min, max,null,null, effect, emptyEffect )
+    constructor(arg : String, possibilities:Collection<Int>?, effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,null,null,null, null,null,possibilities, effect, emptyEffect )
+    constructor(arg : String,min: (() -> Int)?, max: (() -> Int)?, effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,min,max,null, null,null,null, effect, emptyEffect )
+    constructor(arg : String, possibilities:  (() -> Collection<Int>), effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,null,null,null, null,possibilities,null, effect, emptyEffect )
 
     override fun validateValue(sender: Player, tailArgs: Array<String>): Int? {
-
         if(tailArgs.first() == ".."){
             if(emptyEffect != null) emptyEffect.invoke(sender)
             else sender.sendMessage("${ChatColor.RED}these ${ChatColor.GRAY}..${ChatColor.RED} are there to convey that you could type any number ${ChatColor.DARK_RED}(Int)${ChatColor.RED}, but not literally ${ChatColor.GRAY}..")
@@ -18,18 +19,32 @@ class CommandIntLeaf private constructor(arg : String, private val min:Int?,priv
             sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}is not a valid number ${ChatColor.DARK_RED}(Int)")
             return null
         }
+
         if(possibilities != null && !possibilities.contains(number)){
            sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}is not a valid number ${ChatColor.DARK_RED}, you must chose from one of the suggested once")
            return null
         }
-        if(min != null && number < min && possibilities == null){
+        if(realTimePossibilities != null && !realTimePossibilities.invoke().contains(number)){
+            sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}is not a valid number ${ChatColor.DARK_RED}, you must chose from one of the suggested once")
+            return null
+        }
+        if(min != null && number < min && (possibilities == null && realTimePossibilities == null)){
             number = min
             sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}has been clamped to ${ChatColor.GRAY}$min")
         }
-        else if(max != null && number > max  && possibilities == null){
+        else if(max != null && number > max  && (possibilities == null && realTimePossibilities == null)){
             number = max
             sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}has been clamped to ${ChatColor.GRAY}$max")
         }
+        else if(realTimeMin != null && number < realTimeMin.invoke()  && (possibilities == null && realTimePossibilities == null)){
+            number = realTimeMin.invoke()
+            sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}has been clamped to ${ChatColor.GRAY}${realTimeMin.invoke()}")
+        }
+        else if(realTimeMax != null && number > realTimeMax.invoke()  && (possibilities == null && realTimePossibilities == null)){
+            number = realTimeMax.invoke()
+            sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}has been clamped to ${ChatColor.GRAY}${realTimeMax.invoke()}")
+        }
+
         return number
     }
 
@@ -41,10 +56,20 @@ class CommandIntLeaf private constructor(arg : String, private val min:Int?,priv
                 if (p.toString().startsWith(currentlyTyping)) list.add(p.toString())
             return list
         }
-        if (min == null && max == null) {
-            if ("" == currentlyTyping)
+        if(realTimePossibilities != null){
+            for(p in realTimePossibilities.invoke())
+                if (p.toString().startsWith(currentlyTyping)) list.add(p.toString())
+            return list
+        }
+        if (min == null && max == null && realTimeMin == null && realTimeMax == null) {
+            if ("" == currentlyTyping){
                 list.add("..")
-        } else if (min == null) {
+            }
+            return list
+        }
+        val min = min ?: realTimeMin?.invoke()
+        val max = max ?: realTimeMax?.invoke()
+        if (min == null) {
             if ("" == currentlyTyping) {
                 list.add("..")
                 list.add((max).toString())

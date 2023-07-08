@@ -6,8 +6,6 @@ import org.bukkit.entity.Player
 class CommandPairLeaf<T,U>(arg : String, private val firstLeaf : ICommandLeaf<T>, private val secondLeaf : ICommandLeaf<U>, effect : (Player, Pair<T,U>) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : ICommandLeaf<Pair<T,U>>(arg,effect, emptyEffect) where T : Any, U : Any {
     constructor(arg: String, firstLeaf: ICommandLeaf<T>, secondLeaf: ICommandLeaf<U>) : this(arg,firstLeaf,secondLeaf,{_,_ -> })
 
-    override val argumentsNeeded = firstLeaf.argumentsNeeded + secondLeaf.argumentsNeeded
-
     override fun onCommand(sender: Player, tailArgs: Array<String>) {
         if(tailArgs.size < argumentsNeeded) {
             if(emptyEffect != null) emptyEffect.invoke(sender)
