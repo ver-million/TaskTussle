@@ -8,7 +8,7 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryDragEvent
 
 object InteractiveInventorySystem : Listener {
-    val version = "v1.0 Interactive Inventory"
+    const val version = "v1.0 Interactive Inventory"
     private val inventories : MutableList<InteractiveInventory> = mutableListOf()
 
     fun addInventory(inv : InteractiveInventory){

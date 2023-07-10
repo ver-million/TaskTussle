@@ -6,6 +6,7 @@ import me.wanttobee.maseg.systems.utils.interactiveInventory.InteractiveInventor
 import me.wanttobee.maseg.systems.utils.interactiveItem.InteractiveItem
 import me.wanttobee.maseg.systems.utils.interactiveItem.InteractiveItemSystem
 import me.wanttobee.maseg.systems.utils.teams.Team
+import me.wanttobee.maseg.systems.utils.teams.TeamSystem
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -15,7 +16,7 @@ import org.bukkit.event.player.PlayerPickupItemEvent
 import org.bukkit.inventory.ItemStack
 
 object BingoSystem : Listener {
-    val version = "v1.0 Bingo using [${InteractiveItemSystem.version}] [${InteractiveInventorySystem.version}]"
+    const val version = "v1.1 Bingo using [${TeamSystem.version}] [${InteractiveItemSystem.version}] [${InteractiveInventorySystem.version}]"
 
     //global values to control the game
     private val plugin = MASEGPlugin.instance
@@ -35,8 +36,10 @@ object BingoSystem : Listener {
     var shuffleToken = 0
     var refreshToken = 0
     var handInItem = false
+    var mutualItems = 15
+    var choseTeamsBeforehand = true
 
-    fun start(commander: Player, teams : Int, bingoPoolFile : String, ignoreTeamSize : Boolean = false){
+    fun startCommand(commander: Player, teams : Int, bingoPoolFile : String, ignoreTeamSize : Boolean = false){
         if(bingoGame != null)  {
             commander.sendMessage("${ChatColor.RED}there is already an bingo game running")
             return
@@ -55,47 +58,56 @@ object BingoSystem : Listener {
             commander.sendMessage("${ChatColor.RED}something went wrong in retrieving the pool data of ${ChatColor.GRAY} $bingoPoolFile")
             return
         }
+        val mutualCardItems = generateCard(pool, easyRatio,normalRatio,hardRatio, emptyArray(), mutualItems) ?: run {
+            commander.sendMessage("${ChatColor.RED}Cant generate items")
+            return
+        }
+        val cleanedPool = cleanUpPool(pool,mutualCardItems)
 
         bingoGame = mutableMapOf()
-        val playerCount = onlinePlayers.size
-        val teamSize = playerCount / teams
-        val remainingPlayers = playerCount % teams
-        var currentPlayerIndex = 0
-        for (i in 0 until teams) {
-            val size = teamSize + if (i < remainingPlayers) 1 else 0
-            val team = Team(i)
-            for (j in 0 until size) {
-                team.addMember(onlinePlayers[currentPlayerIndex])
-                currentPlayerIndex++
+        val task : (Array<Team>) -> Unit = teamTask@{ generatedTeams ->
+            for (team in generatedTeams) {
+                val card = BingoInventory(team.getColor())
+                val itemList = generateCard(cleanedPool, easyRatio,normalRatio,hardRatio,mutualCardItems,25) ?: run {
+                    commander.sendMessage("${ChatColor.RED}Cant generate items")
+                    return@teamTask
+                }
+                card.putCard(itemList)
+                bingoGame!![team] = card
             }
-            val card = BingoInventory(team.getColor())
-            card.generateCard(pool, easyRatio,normalRatio,hardRatio)
-            bingoGame!![team] = card
+
+            clickItem = InteractiveItem()
+                .setSlot(cardSlot)
+                .setItem(MASEGUtil.itemFactory(Material.PAPER, "${ChatColor.GOLD}Bingo Card", null, true))
+                .setRightClickEvent { player -> open(player) }
+
+            for((team,card) in bingoGame!!){
+                if(shuffleToken == 0 && refreshToken == 0)
+                    card.generateTeamItems(bingoGame!!, seeOtherTeams)
+                else
+                    card.generateTeamItems(bingoGame!!, false)
+                team.applyToMembers { member -> clickItem.giveToPlayer(member) }
+            }
+
+            commander.sendMessage("${ChatColor.GREEN}started bingo game")
+
+            if(shuffleToken != 0 || refreshToken != 0){
+                bingoPickupLocked = true
+                refreshShuffleControl(pool, easyRatio,normalRatio,hardRatio)
+            } else beginMessage()
         }
 
-        clickItem = InteractiveItem()
-            .setSlot(cardSlot)
-            .setItem(MASEGUtil.itemFactory(Material.PAPER, "${ChatColor.GOLD}Bingo Card", null, true))
-            .setRightClickEvent { player -> open(player) }
-
-        for((team,card) in bingoGame!!){
-            if(shuffleToken == 0 && refreshToken == 0)
-                card.generateTeamItems(bingoGame!!, seeOtherTeams)
-            else
-                card.generateTeamItems(bingoGame!!, false)
-            team.applyToMembers { member -> clickItem.giveToPlayer(member) }
+        if(choseTeamsBeforehand){
+            TeamSystem.teamMaker(commander,teams,task)
         }
-
-        commander.sendMessage("${ChatColor.GREEN}started bingo game")
-
-        if(shuffleToken != 0 || refreshToken != 0){
-            bingoPickupLocked = true
-            refreshShuffleControl(pool, easyRatio,normalRatio,hardRatio)
+        else {
+            val generatedTeams = TeamSystem.makeXTeams(teams)
+            task.invoke(generatedTeams)
         }
-        else beginMessage()
     }
 
-    fun beginMessage(){
+
+    private fun beginMessage(){
         if(bingoGame == null) return
         for((team,_) in bingoGame!!){
             team.applyToMembers { p ->
@@ -159,7 +171,7 @@ object BingoSystem : Listener {
                         team.applyToMembers { p ->
                             p.playSound(p, Sound.ENTITY_VILLAGER_WORK_LIBRARIAN, SoundCategory.MASTER, 1f, 1f)
                         }
-                        card.generateCard(pool, easyRatio, normalRatio, hardRatio)
+                        //this.generateCard(pool, easyRatio, normalRatio, hardRatio)
                     }
                 team.applyToMembers { p -> refreshItem.giveToPlayer(p) }
                 itemsToBeCleared.add(refreshItem)
@@ -186,6 +198,37 @@ object BingoSystem : Listener {
             if(team.containsMember(p))
                 card.open(p)
         }
+    }
+
+    private fun generateCard(pool: Triple<Array<Material>, Array<Material>, Array<Material>>, easyRatio: Int, normalRatio: Int, hardRatio: Int, alreadyGenerated : Array<Material>, arraySize :Int = 25) : Array<Material> ? {
+        val totalRatio = easyRatio + normalRatio + hardRatio
+        if(totalRatio == 0) return null
+        val generateHere = if(arraySize - alreadyGenerated.size < 0) 0 else arraySize - alreadyGenerated.size
+        val easyAmountGiven = (easyRatio.toDouble() / totalRatio.toDouble() * generateHere).toInt()
+        val hardAmountGiven = (hardRatio.toDouble() / totalRatio.toDouble() * generateHere).toInt()
+        val easyAmount = if(easyAmountGiven > pool.first.size) pool.first.size else easyAmountGiven
+        val hardAmount = if(hardAmountGiven > pool.third.size) pool.third.size else hardAmountGiven
+        val normalAmount = generateHere - easyAmount - hardAmount
+        if(normalAmount > pool.second.size) return null
+        val selectedMaterials = mutableListOf<Material>()
+        alreadyGenerated.shuffle()
+        selectedMaterials.addAll(alreadyGenerated.take( if(arraySize < alreadyGenerated.size) arraySize else arraySize ))
+        pool.first .shuffle()
+        pool.second.shuffle()
+        pool.third .shuffle()
+        selectedMaterials.addAll(pool.first.take(easyAmount))
+        selectedMaterials.addAll(pool.second.take(normalAmount))
+        selectedMaterials.addAll(pool.third.take(hardAmount))
+        selectedMaterials.shuffle()
+        return selectedMaterials.toTypedArray()
+    }
+
+    private fun cleanUpPool(dirtyPool: Triple<Array<Material>, Array<Material>, Array<Material>>, filter : Array<Material>) : Triple<Array<Material>, Array<Material>, Array<Material>>{
+        return Triple(
+            dirtyPool.first.filter { item -> !filter.contains(item) }.toTypedArray(),
+            dirtyPool.second.filter { item -> !filter.contains(item) }.toTypedArray(),
+            dirtyPool.third.filter { item -> !filter.contains(item) }.toTypedArray(),
+        )
     }
 
     fun stop(commander: Player){

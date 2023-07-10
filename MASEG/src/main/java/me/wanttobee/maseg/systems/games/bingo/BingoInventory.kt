@@ -15,7 +15,6 @@ class BingoInventory(private val color:ChatColor) : InteractiveInventory(45,"${C
         createBorder()
     }
     private fun createBorder(){
-        val separator = MASEGUtil.itemFactory(Material.BLACK_STAINED_GLASS_PANE, " ", null)
         for(i in 0 until 5){
             this.inventory.setItem(1 + 9*i,separator)
             this.inventory.setItem(7 + 9*i,separator)
@@ -38,30 +37,14 @@ class BingoInventory(private val color:ChatColor) : InteractiveInventory(45,"${C
         }
     }
 
-
-    fun generateCard(pool: Triple<Array<Material>, Array<Material>, Array<Material>>, easyRatio: Int, normalRatio: Int, hardRatio: Int){
-        val totalRatio = easyRatio + normalRatio + hardRatio
-        if(totalRatio == 0) return
-        val easyAmountGiven = (easyRatio.toDouble() / totalRatio.toDouble() * 25).toInt()
-        val hardAmountGiven = (hardRatio.toDouble() / totalRatio.toDouble() * 25).toInt()
-        val easyAmount = if(easyAmountGiven > pool.first.size) pool.first.size else easyAmountGiven
-        val hardAmount = if(hardAmountGiven > pool.third.size) pool.third.size else hardAmountGiven
-        val normalAmount = 25 - easyAmount - hardAmount
-        if(normalAmount > pool.second.size) return
-        val selectedMaterials = mutableListOf<Material>()
-        pool.first .shuffle()
-        pool.second.shuffle()
-        pool.third .shuffle()
-        selectedMaterials.addAll(pool.first.take(easyAmount))
-        selectedMaterials.addAll(pool.second.take(normalAmount))
-        selectedMaterials.addAll(pool.third.take(hardAmount))
-        selectedMaterials.shuffle()
-        items = selectedMaterials.toTypedArray()
-
+    fun putCard( itemSet : Array<Material>) : Boolean{
+        if(itemSet.size < 25) return false
+        items = Array(25) {i -> itemSet[i] }
         for(i in 0 until 25){
-            val item = MASEGUtil.itemFactory(selectedMaterials[i], "", "§7you haven't obtained this item yet")
+            val item = MASEGUtil.itemFactory(itemSet[i], "", "§7you haven't obtained this item yet")
             this.inventory.setItem(2 + (i%5) + 9*(i/5),item)
         }
+        return true
     }
 
     fun generateTeamItems(game : Map<Team, BingoInventory>, seeOtherTeams : Boolean){

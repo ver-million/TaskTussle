@@ -4,6 +4,7 @@ import me.wanttobee.maseg.MASEGPlugin
 import me.wanttobee.maseg.systems.utils.playerTracker.PlayerTrackerSystem
 import me.wanttobee.maseg.systems.utils.randomPlayer.RandomPlayerSystem
 import me.wanttobee.maseg.systems.utils.teams.Team
+import me.wanttobee.maseg.systems.utils.teams.TeamSystem
 import org.bukkit.ChatColor
 import org.bukkit.GameMode
 import org.bukkit.entity.EnderDragon
@@ -16,7 +17,7 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 
 object ManHuntSystem : Listener {
-    val version = "v2.0 Manhunt using [${PlayerTrackerSystem.version}] [${RandomPlayerSystem.version}]"
+    const val version = "v2.0 Manhunt using [${TeamSystem.version}] [${PlayerTrackerSystem.version}] [${RandomPlayerSystem.version}]"
     private val plugin = MASEGPlugin.instance
 
     private var runners : Team? = null

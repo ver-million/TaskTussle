@@ -9,8 +9,8 @@ import org.bukkit.entity.Player
 
 object PlayerTrackerCommand : ISystemCommand {
     private val plugin = MASEGPlugin.instance
-    override val exampleCommand = "/my playerTracker"
-    override val helpText = "player compass stuff"
+    override val exampleCommand = "/mu playerTracker"
+    override val helpText = "everything for setting up the playerTracker, all games that use a tracker have al these settings baked in so you probably dont need this anyway"
 
 
     private val listTree = CommandEmptyLeaf("list") {p -> PlayerTrackerSystem.printListTo(p) }

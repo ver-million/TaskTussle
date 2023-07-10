@@ -20,13 +20,12 @@ object BingoFileSystem {
         val bingoPool: FileConfiguration = YamlConfiguration.loadConfiguration(file)
         if (file.exists()) return !file.exists()
 
-        val testInv = Bukkit.createInventory(null, InventoryType.CHEST)
-
         plugin.server.scheduler.runTaskAsynchronously(plugin) { _ ->
             bingoPool.createSection("Easy")
             bingoPool.createSection("Normal")
             bingoPool.createSection("Hard")
             val firstCheck = Material.values().filter itemCheck@ {
+                if(!it.isItem) return@itemCheck false
                 if(it.name.contains("COMMAND_BLOCK")) return@itemCheck false
                 if(it.name.contains("SPAWN_EGG")) return@itemCheck false
                 if(it.name.contains("POTION")) return@itemCheck false
@@ -80,12 +79,7 @@ object BingoFileSystem {
                     if(it == Material.WILD_ARMOR_TRIM_SMITHING_TEMPLATE) return@itemCheck false
                     if(it == Material.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE) return@itemCheck false
                 }
-
-
-                //if its an item that cant be placed in the inventory, then its also not obtainable, (like a flower inside a flowerpot)
-                testInv.setItem(0, ItemStack(it))
-                val item = testInv.getItem(0)
-                item?.type == it
+                true
             }
             val materialList = firstCheck.map { it.name }
             bingoPool.set("Normal", materialList)

@@ -8,8 +8,8 @@ import org.bukkit.entity.Player
 
 object RandomPlayerCommand : ISystemCommand {
     private val plugin = MASEGPlugin.instance
-    override val exampleCommand = "/mu randomPlayer [amount/Int] [without/Players]+ "
-    override val helpText = "selects a random player"
+    override val exampleCommand = "/mu randomPlayer [amount/Int] [playerPool/Player]+ "
+    override val helpText = "selects a random player, if player pool is given, it will select random from that playerPool, otherwise from everyone online"
 
     override val baseTree = CommandPairLeaf<Int,List<Player>>("randomPlayer",
         CommandIntLeaf("amountSelected", { 1 }, { plugin.server.onlinePlayers.size }, {_,_ -> }),

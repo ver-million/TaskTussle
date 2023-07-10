@@ -16,7 +16,7 @@ import org.bukkit.event.player.PlayerRespawnEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 
 object InteractiveItemSystem: Listener {
-    val version = "v1.1 Interactive Item"
+    const val version = "v1.1 Interactive Item"
     private val hotBarItems : MutableList<InteractiveItem> = mutableListOf()
 
 

@@ -7,4 +7,5 @@ interface ITeamObserver {
     fun onTeamClear()
     fun onAddMember(member : Player)
     fun onRemoveMember(member: Player)
+    fun onSwapMember(leave: Player, enter:Player)
 }

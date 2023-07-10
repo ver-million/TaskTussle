@@ -1,12 +1,14 @@
 package me.wanttobee.maseg.systems.utils.playerTracker
 
+import me.wanttobee.maseg.MASEGPlugin
 import me.wanttobee.maseg.systems.utils.teams.Team
+import me.wanttobee.maseg.systems.utils.teams.TeamSystem
 import org.bukkit.entity.Player
 
 //this took ages to make right, but I think its cool now
 //trust me, you don't want to see the code of v1, it's horrible
 object PlayerTrackerSystem {
-    const val version = "v2.0 Player Tracker"
+    const val version = "v2.0 Player Tracker using [${TeamSystem.version}]"
 
     private val trackers : MutableMap<Int, PlayerTracker> = mutableMapOf()
     private var trackerID = 0
@@ -15,7 +17,7 @@ object PlayerTrackerSystem {
             sender.sendMessage("§cThere are no player compasses to list")
             return
         }
-        sender.sendMessage("§aPlayer Compasses List: ")
+        sender.sendMessage("${MASEGPlugin.title} §aPlayer Compasses List: ")
         for((id, tracker) in trackers)
             sender.sendMessage("§6$id: $tracker")
     }

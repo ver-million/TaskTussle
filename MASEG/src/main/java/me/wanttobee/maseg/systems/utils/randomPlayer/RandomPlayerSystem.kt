@@ -2,6 +2,7 @@ package me.wanttobee.maseg.systems.utils.randomPlayer
 
 import me.wanttobee.maseg.MASEGPlugin
 import me.wanttobee.maseg.systems.utils.teams.Team
+import me.wanttobee.maseg.systems.utils.teams.TeamSystem
 import org.apache.commons.lang.mutable.Mutable
 import org.bukkit.*
 import org.bukkit.entity.Player
@@ -13,7 +14,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 object RandomPlayerSystem {
-    val version = "v2.0 Random Player"
+    const val version = "v2.0 Random Player using [${TeamSystem.version}]"
     private val plugin = MASEGPlugin.instance
 
     private const val pauseTicks: Int = 4
@@ -101,6 +102,7 @@ object RandomPlayerSystem {
         }
         if (winningProcess != null)
             winningProcess(team)
+        else team.clearTeam()
     }
 
 

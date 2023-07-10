@@ -5,10 +5,14 @@ import me.wanttobee.maseg.commands.MUCommands
 import me.wanttobee.maseg.systems.games.bingo.BingoFileSystem.createDefaultBingoPool
 import me.wanttobee.maseg.systems.games.bingo.BingoSystem
 import me.wanttobee.maseg.systems.games.manHunt.ManHuntSystem
+import me.wanttobee.maseg.systems.games.taskTussle.TaskTussleListener
+import me.wanttobee.maseg.systems.games.taskTussle.TaskTussleSystem
 import me.wanttobee.maseg.systems.utils.interactiveInventory.InteractiveInventorySystem
 import me.wanttobee.maseg.systems.utils.interactiveItem.InteractiveItemSystem
 import me.wanttobee.maseg.systems.utils.playerTracker.PlayerTrackerSystem
 import me.wanttobee.maseg.systems.utils.randomPlayer.RandomPlayerSystem
+import me.wanttobee.maseg.systems.utils.teams.TeamSystem
+import org.bukkit.ChatColor
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.java.annotation.command.Command
 import org.bukkit.plugin.java.annotation.command.Commands
@@ -33,6 +37,7 @@ import org.bukkit.plugin.java.annotation.plugin.author.Author
 class MASEGPlugin : JavaPlugin() {
     companion object {
         lateinit var instance: MASEGPlugin
+        val title = "${ChatColor.GRAY}[${ChatColor.GOLD}MASEG${ChatColor.GRAY}]${ChatColor.RESET}"
     }
 
     override fun onEnable() {
@@ -51,6 +56,9 @@ class MASEGPlugin : JavaPlugin() {
         server.pluginManager.registerEvents(BingoSystem, this)
         server.pluginManager.registerEvents(InteractiveInventorySystem, this)
         server.pluginManager.registerEvents(InteractiveItemSystem, this)
+        server.pluginManager.registerEvents(TeamSystem,this)
+        server.pluginManager.registerEvents(TaskTussleListener, this)
+
 
         StartUpTests.run()
     }
@@ -60,8 +68,10 @@ class MASEGPlugin : JavaPlugin() {
     private fun logVersions(){
         this.logger.info(ManHuntSystem.version)
         this.logger.info(BingoSystem.version)
+        this.logger.info(TaskTussleSystem.version)
         this.logger.info(RandomPlayerSystem.version)
         this.logger.info(PlayerTrackerSystem.version)
+        this.logger.info(TeamSystem.version)
         this.logger.info(InteractiveInventorySystem.version)
         this.logger.info(InteractiveItemSystem.version)
     }

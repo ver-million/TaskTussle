@@ -224,6 +224,14 @@ class PlayerTracker(private val tracking : Team, private val refreshTime: Int,pr
                 iItem.doRefresh()
     }
 
+    override fun onSwapMember(leave: Player, enter: Player) {
+        playerLocations[enter] = playerLocations[leave]!!
+        playerLocations.remove(leave)
+
+        for(iItem in interactiveItems)
+            iItem.doRefresh()
+    }
+
     override fun toString(): String {
         var value = "Tracking: "
         for(members in tracking.getMembers()){
