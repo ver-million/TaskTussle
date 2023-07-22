@@ -4,6 +4,9 @@ import me.wanttobee.maseg.MASEGPlugin
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 
+//the base structure of the composite design
+//the flowerPot of the branches and leaves if you will
+//this is the basis of that system and thus requires the different branches
 interface ICommandSystem : IPlayerCommands {
     val helpText : String
     val systemCommands : Array<ISystemCommand>

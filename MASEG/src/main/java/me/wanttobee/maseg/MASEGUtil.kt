@@ -8,7 +8,17 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
-
+//a class with different utilities that don't quit fit in any other class
+//-=Public Methods=-
+//
+//itemFactory(...) : ItemStack -> A method to makes it easier to create ItemStacks
+//
+// colorMaterial(ChatColor, Material) : Material -> A method that return the corresponding material that correspond with the color
+// and white version of that material
+// for example :   (ChatColor.RED, Material.WHITE_WOOL) -> MATERIAL.RED_WOOL
+// returns the input material if there is no match (or you put chatColor WHITE)
+//
+// getRealName(Material) : String -> A method that returns the in-game name of a material (because for some reason there is no easier way)
 object MASEGUtil {
     val IDKey: NamespacedKey = NamespacedKey(MASEGPlugin.instance, "maseg_identifier")
     private var id = 0

@@ -98,7 +98,7 @@ object ManHuntSystem : Listener {
         PlayerTrackerSystem.stopTracking(trackerID)
         trackerID = -1
 
-        runners?.clearTeam()
+        runners?.clear()
         runners = null
     }
 

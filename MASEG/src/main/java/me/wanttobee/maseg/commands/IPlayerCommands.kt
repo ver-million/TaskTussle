@@ -6,6 +6,8 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
+//the base interface of the different base command groups
+//this provides some simple base structure like a default Help method when nothing is put in, and a checker that it is defenitly a player
 interface IPlayerCommands : CommandExecutor, TabCompleter {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {

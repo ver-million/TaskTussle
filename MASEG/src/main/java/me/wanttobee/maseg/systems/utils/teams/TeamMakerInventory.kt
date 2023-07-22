@@ -13,18 +13,20 @@ class TeamMakerInventory(private val teamAmount : Int,private val maxTeamSize : 
     init {
         if (maxTeamSize in 1..64){
             teams = Array(teamAmount) { i -> Team(i) }
-            refreshTeams()
+            refreshTeamVisualizer()
         }
 
     }
-    private fun refreshTeams(){
+    //refreshes the inventories items when any changes happen (when someone clicks on another team to move for example)
+    //this way the items stay up to date
+    private fun refreshTeamVisualizer(){
         for(index in 0 until teamAmount){
             val team = teams[index]
             val teamMembers = team.getMembers()
             var item: ItemStack
             if(teamMembers.isEmpty()){
-                item = MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.getColor(), Material.WHITE_STAINED_GLASS),
-                    "${ChatColor.BOLD}${team.getColor()}Team ${team.getColor().name}","${ChatColor.DARK_GRAY} Empty",1 )
+                item = MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.color, Material.WHITE_STAINED_GLASS),
+                    "${ChatColor.BOLD}${team.color}Team ${team.color.name}","${ChatColor.DARK_GRAY} Empty",1 )
             }
             else{
                 var memberString = "${ChatColor.GRAY}"
@@ -33,8 +35,8 @@ class TeamMakerInventory(private val teamAmount : Int,private val maxTeamSize : 
                     if(memberID != teamMembers.size -1)
                         memberString += ", "
                 }
-                item = MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.getColor(), Material.WHITE_CONCRETE),
-                    "${ChatColor.BOLD}${team.getColor()}Team ${team.getColor().name}",memberString,teamMembers.size , true)
+                item = MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.color, Material.WHITE_CONCRETE),
+                    "${ChatColor.BOLD}${team.color}Team ${team.color.name}",memberString,teamMembers.size , true)
             }
 
             this.itemClickEvent(item) { player ->
@@ -46,13 +48,13 @@ class TeamMakerInventory(private val teamAmount : Int,private val maxTeamSize : 
                         t.removeMember(player)
                     thisTeam.addMember(player)
                 }
-                refreshTeams()
+                refreshTeamVisualizer()
             }
             this.inventory.setItem(index,item)
         }
     }
 
-    fun getTeams() : Array<Team>{
+    fun exportTeams() : Array<Team>{
         this.clear()
         return teams.filter { team -> team.getMembers().isNotEmpty() }.toTypedArray()
     }

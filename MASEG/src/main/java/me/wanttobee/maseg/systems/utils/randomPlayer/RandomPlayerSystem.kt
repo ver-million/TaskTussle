@@ -3,7 +3,6 @@ package me.wanttobee.maseg.systems.utils.randomPlayer
 import me.wanttobee.maseg.MASEGPlugin
 import me.wanttobee.maseg.systems.utils.teams.Team
 import me.wanttobee.maseg.systems.utils.teams.TeamSystem
-import org.apache.commons.lang.mutable.Mutable
 import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.potion.PotionEffect
@@ -102,7 +101,7 @@ object RandomPlayerSystem {
         }
         if (winningProcess != null)
             winningProcess(team)
-        else team.clearTeam()
+        else team.clear()
     }
 
 

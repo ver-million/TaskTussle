@@ -5,7 +5,7 @@ import me.wanttobee.maseg.systems.games.manHunt.ManHuntCommand
 import org.bukkit.ChatColor
 
 object MGCommands : ICommandSystem {
-    override val helpText: String = "${ChatColor.GRAY}/mg${ChatColor.WHITE} for maseg games"
+    override val helpText: String = "${ChatColor.GRAY}/mg${ChatColor.WHITE} for Maseg Games"
 
     override val systemCommands : Array<ISystemCommand> = arrayOf(
         ManHuntCommand,

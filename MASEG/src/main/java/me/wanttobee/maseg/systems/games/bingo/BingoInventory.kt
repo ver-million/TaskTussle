@@ -68,14 +68,14 @@ class BingoInventory(private val color:ChatColor) : InteractiveInventory(45,"${C
                     memberString += ", "
             }
             if(card == this){
-                val item = MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.getColor(), Material.WHITE_CONCRETE),
-                    "${ChatColor.BOLD}${team.getColor()}This Card", memberString,amount, true)
+                val item = MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.color, Material.WHITE_CONCRETE),
+                    "${ChatColor.BOLD}${team.color}This Card", memberString,amount, true)
                 this.inventory.setItem( 9*(index%5) + 8*(index/5),item)
             }else{
-                val item = if(seeOtherTeams)  MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.getColor(), Material.WHITE_CONCRETE),
-                    "${ChatColor.BOLD}${team.getColor()}Team ${team.getColor().name}",memberString,amount )
-                else MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.getColor(), Material.WHITE_STAINED_GLASS),
-                    "${ChatColor.BOLD}${team.getColor()}Team ${team.getColor().name}",memberString,amount )
+                val item = if(seeOtherTeams)  MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.color, Material.WHITE_CONCRETE),
+                    "${ChatColor.BOLD}${team.color}Team ${team.color.name}",memberString,amount )
+                else MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.color, Material.WHITE_STAINED_GLASS),
+                    "${ChatColor.BOLD}${team.color}Team ${team.color.name}",memberString,amount )
 
                 if(seeOtherTeams) this.itemClickEvent(item) { player -> card.open(player) }
                 this.inventory.setItem(9*(index%5) + 8*(index/5),item)

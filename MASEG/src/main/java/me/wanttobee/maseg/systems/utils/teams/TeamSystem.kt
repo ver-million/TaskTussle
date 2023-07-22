@@ -27,7 +27,7 @@ object TeamSystem: Listener {
 
     fun deleteAll(){
         for(tID in activeTeams.indices)
-            activeTeams[0].clearTeam()
+            activeTeams[0].clear()
 
     }
 
@@ -97,7 +97,7 @@ object TeamSystem: Listener {
             .setItem(MASEGUtil.itemFactory(Material.FIRE_CHARGE, "${ChatColor.GOLD}Detonate Current Teams", "${ChatColor.GRAY}Use these teams", true))
         teamFinisher.setRightClickEvent { player ->
                 teamMakerItem.clear()
-                val teams = teamMakerInventory.getTeams()
+                val teams = teamMakerInventory.exportTeams()
                 effect.invoke(teams)
                 teamFinisher.clear()
             }

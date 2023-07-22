@@ -2,6 +2,7 @@ package me.wanttobee.maseg.commands.commandTree
 
 import org.bukkit.entity.Player
 
+//the of the whole composite command structure (branches and leaves)
 abstract class ICommandBranch(val arg : String ) {
 
     abstract fun onCommand(sender : Player, tailArgs : Array<String>)

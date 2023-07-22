@@ -67,7 +67,7 @@ object BingoSystem : Listener {
         bingoGame = mutableMapOf()
         val task : (Array<Team>) -> Unit = teamTask@{ generatedTeams ->
             for (team in generatedTeams) {
-                val card = BingoInventory(team.getColor())
+                val card = BingoInventory(team.color)
                 val itemList = generateCard(cleanedPool, easyRatio,normalRatio,hardRatio,mutualCardItems,25) ?: run {
                     commander.sendMessage("${ChatColor.RED}Cant generate items")
                     return@teamTask
@@ -240,7 +240,7 @@ object BingoSystem : Listener {
         commander.sendMessage("${ChatColor.GREEN}stopped the running bingo game")
 
         for((team,card) in bingoGame!!){
-            team.clearTeam()
+            team.clear()
             card.clear()
         }
         if(refreshTaskID > -1){
@@ -303,11 +303,11 @@ object BingoSystem : Listener {
                     }
                     for(p in plugin.server.onlinePlayers){
                         if(seeOtherTeams)
-                            p.sendMessage("${team.getColor()}Team ${team.getColor().name}${ChatColor.RESET} got item: ${ChatColor.GOLD}${MASEGUtil.getRealName(item.type)}")
+                            p.sendMessage("${team.color}Team ${team.color.name}${ChatColor.RESET} got item: ${ChatColor.GOLD}${MASEGUtil.getRealName(item.type)}")
                         else if(team.containsMember(p))
-                            p.sendMessage("${team.getColor()}Team ${team.getColor().name}${ChatColor.RESET} got an item ${ChatColor.DARK_GRAY}(${MASEGUtil.getRealName(item.type)})")
+                            p.sendMessage("${team.color}Team ${team.color.name}${ChatColor.RESET} got an item ${ChatColor.DARK_GRAY}(${MASEGUtil.getRealName(item.type)})")
                         else
-                            p.sendMessage("${team.getColor()}Team ${team.getColor().name}${ChatColor.RESET} got an item")
+                            p.sendMessage("${team.color}Team ${team.color.name}${ChatColor.RESET} got an item")
                     }
 
                     for((_,card2) in bingoGame!!)
