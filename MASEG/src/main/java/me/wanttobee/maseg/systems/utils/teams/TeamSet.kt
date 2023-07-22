@@ -1,15 +1,10 @@
 package me.wanttobee.maseg.systems.utils.teams
 
-import me.wanttobee.maseg.MASEGPlugin
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
-import org.bukkit.event.player.PlayerJoinEvent
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
-import java.util.Objects
 
 
-class TeamSet<T>(private val defaultValue : () -> T, private val title : String = "") {
+class TeamSet<T>(private val defaultValue : (Team) -> T, private val title : String = "") {
 //private val entityClass : Class<T>,
     private val teams : MutableMap<Team, T> = mutableMapOf()
     private val observers : MutableList<ITeamSetObserver> = mutableListOf()
@@ -20,15 +15,21 @@ class TeamSet<T>(private val defaultValue : () -> T, private val title : String 
     fun unSubscribe(sub : ITeamSetObserver){
         observers.remove(sub)
     }
+    fun toPairList() : List<Pair<Team, T>>{
+        val returnList = mutableListOf<Pair<Team, T>>()
+        for(team in teams)
+            returnList.add(Pair(team.key,team.value))
+        return returnList
+    }
 
 
     init{
-        TeamSystem2.addTeamSet(this)
+        TeamSystem.addTeamSet(this)
     }
     fun clear(){
         for(ob in observers)
             ob.onSetClear()
-        TeamSystem2.removeTeamSet(this)
+        TeamSystem.removeTeamSet(this)
     }
 
     fun setLeaveOnQuit(value : Boolean){
@@ -46,7 +47,7 @@ class TeamSet<T>(private val defaultValue : () -> T, private val title : String 
         teams[team]= value
     }
     fun addTeam(team: Team) {
-        return addTeam(team, defaultValue.invoke())
+        return addTeam(team, defaultValue.invoke(team))
     }
 
     fun getTeam(player: Player): Team? {
@@ -85,8 +86,12 @@ class TeamSet<T>(private val defaultValue : () -> T, private val title : String 
 
     override fun toString(): String {
         var stringBuffer = "${ChatColor.GOLD}Set${ChatColor.RESET}: $title"
-        for((team,value) in teams)
-            stringBuffer += "\n- $team ${ChatColor.GRAY}$value"
+        for((team,value) in teams){
+            var valueName = value!!::class.simpleName ?: "null"
+            if(valueName == "Unit") valueName = "-"
+            stringBuffer += "\n${ChatColor.WHITE}- $team ${ChatColor.GRAY}$valueName"
+        }
+
         return stringBuffer
     }
 
@@ -116,7 +121,7 @@ class TeamSet<T>(private val defaultValue : () -> T, private val title : String 
                 member.sendMessage(message)
         }
     }
-    fun applyToTeams( effect: (Team,T) -> Unit ){
+    fun applyToTeams( effect: (Team, T) -> Unit ){
         for((team,T) in teams)
             effect.invoke(team,T)
     }
@@ -124,6 +129,14 @@ class TeamSet<T>(private val defaultValue : () -> T, private val title : String 
         for((team,_) in teams){
             for(member in team.getMembers())
                 effect.invoke(member)
+        }
+    }
+    fun applyToOwnT(player : Player , effect : T.( ) -> Unit){
+        for((team,T) in teams){
+            if(team.containsMember(player)){
+                T.effect()
+                return
+            }
         }
     }
 }

@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerRespawnEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 
 object InteractiveItemSystem: Listener {
+    private val plugin = MASEGPlugin.instance
     const val version = "v1.1 Interactive Item"
     private val hotBarItems : MutableList<InteractiveItem> = mutableListOf()
 
@@ -135,6 +136,7 @@ object InteractiveItemSystem: Listener {
             if(pair.first == player){
                 pair.second.giveToPlayer(pair.first)
                 playerDeathItems.remove(pair)
+                return
             }
         }
     }

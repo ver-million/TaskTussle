@@ -6,6 +6,7 @@ import me.wanttobee.maseg.systems.utils.interactiveInventory.InteractiveInventor
 import me.wanttobee.maseg.systems.utils.interactiveItem.InteractiveItem
 import me.wanttobee.maseg.systems.utils.interactiveItem.InteractiveItemSystem
 import me.wanttobee.maseg.systems.utils.teams.Team
+import me.wanttobee.maseg.systems.utils.teams.TeamSet
 import me.wanttobee.maseg.systems.utils.teams.TeamSystem
 import org.bukkit.*
 import org.bukkit.entity.Player
@@ -20,7 +21,7 @@ object BingoSystem : Listener {
 
     //global values to control the game
     private val plugin = MASEGPlugin.instance
-    private var bingoGame : MutableMap<Team,BingoInventory>? = null
+    private var bingoGame : TeamSet<BingoInventory>? = null
     private var clickItem : InteractiveItem = InteractiveItem()
     private var bingoPickupLocked = false
     val possibleConditions = arrayOf("1_line","2_lines","3_lines","horizontal_line","vertical_line","diagonal_line", "full_card")
@@ -33,8 +34,8 @@ object BingoSystem : Listener {
     var normalRatio = 3
     var hardRatio = 2
     var seeOtherTeams = true
-    var shuffleToken = 0
-    var refreshToken = 0
+    //var shuffleToken = 0
+    //var refreshToken = 0
     var handInItem = false
     var mutualItems = 15
     var choseTeamsBeforehand = true
@@ -64,63 +65,59 @@ object BingoSystem : Listener {
         }
         val cleanedPool = cleanUpPool(pool,mutualCardItems)
 
-        bingoGame = mutableMapOf()
-        val task : (Array<Team>) -> Unit = teamTask@{ generatedTeams ->
-            for (team in generatedTeams) {
-                val card = BingoInventory(team.color)
+
+
+        val task : (TeamSet<BingoInventory>) -> Unit = teamTask@{ generatedTeams ->
+            bingoGame = generatedTeams
+            bingoGame!!.applyToTeams{team,card ->
                 val itemList = generateCard(cleanedPool, easyRatio,normalRatio,hardRatio,mutualCardItems,25) ?: run {
                     commander.sendMessage("${ChatColor.RED}Cant generate items")
-                    return@teamTask
+                    return@applyToTeams
                 }
                 card.putCard(itemList)
-                bingoGame!![team] = card
             }
-
             clickItem = InteractiveItem()
                 .setSlot(cardSlot)
                 .setItem(MASEGUtil.itemFactory(Material.PAPER, "${ChatColor.GOLD}Bingo Card", null, true))
                 .setRightClickEvent { player -> open(player) }
 
-            for((team,card) in bingoGame!!){
-                if(shuffleToken == 0 && refreshToken == 0)
-                    card.generateTeamItems(bingoGame!!, seeOtherTeams)
-                else
+            bingoGame!!.applyToTeams{team,card ->
+               // if(shuffleToken == 0 && refreshToken == 0)
+               //     card.generateTeamItems(bingoGame!!, seeOtherTeams)
+               // else
                     card.generateTeamItems(bingoGame!!, false)
                 team.applyToMembers { member -> clickItem.giveToPlayer(member) }
             }
 
             commander.sendMessage("${ChatColor.GREEN}started bingo game")
 
-            if(shuffleToken != 0 || refreshToken != 0){
-                bingoPickupLocked = true
-                refreshShuffleControl(pool, easyRatio,normalRatio,hardRatio)
-            } else beginMessage()
+            //if(shuffleToken != 0 || refreshToken != 0){
+            //    bingoPickupLocked = true
+            //    refreshShuffleControl(pool, easyRatio,normalRatio,hardRatio)
+            //} else
+            beginMessage()
         }
 
-        if(choseTeamsBeforehand){
-            TeamSystem.teamMaker(commander,teams,task)
-        }
-        else {
-            val generatedTeams = TeamSystem.makeXTeams(teams)
-            task.invoke(generatedTeams)
-        }
+        if(choseTeamsBeforehand)
+            TeamSystem.teamMaker(commander, { team -> BingoInventory(team.color) },teams,"Bingo",task)
+        else
+            task.invoke( TeamSystem.makeXTeams(teams, "Bingo") { team -> BingoInventory(team.color) } )
     }
 
 
     private fun beginMessage(){
         if(bingoGame == null) return
-        for((team,_) in bingoGame!!){
-            team.applyToMembers { p ->
-                p.sendMessage("${ChatColor.GREEN}Click with the ${ChatColor.GOLD}Bingo Card${ChatColor.GREEN} in your hand to see your teams progress.")
-                if(handInItem)
-                    p.sendMessage("${ChatColor.GREEN}To submit an item, go in your inventory, drag the item you want to submit, and click with this item on the ${ChatColor.GOLD}Bingo Card${ChatColor.GREEN}.")
-                else
-                    p.sendMessage("${ChatColor.GREEN}To submit an item to the card, you will need to pick it up, or drag it on to your ${ChatColor.GOLD}Bingo Card${ChatColor.GREEN}.")
+        bingoGame!!.applyToAllMembers { p ->
+            p.sendMessage("${ChatColor.GREEN}Click with the ${ChatColor.GOLD}Bingo Card${ChatColor.GREEN} in your hand to see your teams progress.")
+            if(handInItem)
+                p.sendMessage("${ChatColor.GREEN}To submit an item, go in your inventory, drag the item you want to submit, and click with this item on the ${ChatColor.GOLD}Bingo Card${ChatColor.GREEN}.")
+            else
+                p.sendMessage("${ChatColor.GREEN}To submit an item to the card, you will need to pick it up, or drag it on to your ${ChatColor.GOLD}Bingo Card${ChatColor.GREEN}.")
 
-            }
         }
     }
 
+    /*
     private fun refreshShuffleControl(pool: Triple<Array<Material>, Array<Material>, Array<Material>>, easyRatio: Int, normalRatio: Int, hardRatio: Int){
         var receivedText = if(shuffleToken != 0) "Rewriters" else ""
         receivedText += if(shuffleToken != 0 && refreshToken != 0) "and" else ""
@@ -191,13 +188,11 @@ object BingoSystem : Listener {
             beginMessage()
         }, refreshShuffleTime.toLong())
     }
+     */
 
     private fun open(p : Player){
         if(bingoGame == null) return
-        for((team,card) in bingoGame!!){
-            if(team.containsMember(p))
-                card.open(p)
-        }
+        bingoGame!!.applyToOwnT(p) { open(p) }
     }
 
     private fun generateCard(pool: Triple<Array<Material>, Array<Material>, Array<Material>>, easyRatio: Int, normalRatio: Int, hardRatio: Int, alreadyGenerated : Array<Material>, arraySize :Int = 25) : Array<Material> ? {
@@ -239,10 +234,10 @@ object BingoSystem : Listener {
         }
         commander.sendMessage("${ChatColor.GREEN}stopped the running bingo game")
 
-        for((team,card) in bingoGame!!){
-            team.clear()
+        for((_,card) in bingoGame!!.toPairList())
             card.clear()
-        }
+        bingoGame!!.clear()
+
         if(refreshTaskID > -1){
             plugin.server.scheduler.cancelTask(refreshTaskID)
             commander.sendMessage("${ChatColor.RED}Note that stopping while in the refresh/shuffle time might have weird side-effects that i didnt bother to fix. But its nothing game breaking")
@@ -256,11 +251,12 @@ object BingoSystem : Listener {
         if(bingoGame == null) return
         bingoPickupLocked = true
         if(!seeOtherTeams){
-            for((_, card) in bingoGame!!)
+            bingoGame!!.applyToTeams {_,card ->
                 card.generateTeamItems(bingoGame!!, true)
+            }
         }
-        for(p in plugin.server.onlinePlayers){
-            bingoGame!![team]?.open(p)
+        bingoGame!!.applyToAllMembers { p ->
+            bingoGame!!.getT(team)?.open(p)
             p.playSound(p.location, Sound.BLOCK_END_PORTAL_SPAWN, SoundCategory.MASTER, 0.2f, 1f)
             p.playSound(p.location, Sound.ENTITY_ALLAY_AMBIENT_WITHOUT_ITEM, SoundCategory.MASTER, 0.9f, 2f)
             p.playSound(p.location, Sound.BLOCK_BEACON_POWER_SELECT, SoundCategory.MASTER, 1f, 1f)
@@ -270,7 +266,7 @@ object BingoSystem : Listener {
 
     private fun checkWinningCondition(team : Team) {
         if(bingoGame == null) return
-        val card = bingoGame!![team] ?: return
+        val card = bingoGame!!.getT(team) ?: return
         val completed = card.getCompletedLines()
         val sum = completed.first + completed.second + completed.third
         val finished = when(winCondition){
@@ -290,7 +286,7 @@ object BingoSystem : Listener {
     private fun checkForItem(player:Player, item : ItemStack) : Boolean{
         if(bingoGame == null || bingoPickupLocked) return false
         var value = false
-        for((team,card) in bingoGame!!){
+        bingoGame!!.applyToTeams{ team,card ->
             if(team.containsMember(player)){
                 if(card.completeItem(item.type)){
                     value = true
@@ -310,8 +306,9 @@ object BingoSystem : Listener {
                             p.sendMessage("${team.color}Team ${team.color.name}${ChatColor.RESET} got an item")
                     }
 
-                    for((_,card2) in bingoGame!!)
+                    bingoGame!!.applyToTeams{ _,card2 ->
                         card2.generateTeamItems(bingoGame!!,seeOtherTeams )
+                    }
                     checkWinningCondition(team)
                 }
             }

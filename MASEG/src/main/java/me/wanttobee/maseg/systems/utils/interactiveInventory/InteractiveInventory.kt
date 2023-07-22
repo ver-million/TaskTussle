@@ -15,10 +15,11 @@ open class InteractiveInventory(size : Int, title : String) {
 
     init{ InteractiveInventorySystem.addInventory(this) }
     fun clear(){
-        val inventoryViewers = inventory.viewers
-        for (viewer in inventoryViewers) {
-            if (viewer is Player && viewer.openInventory.topInventory == inventory) {
-                viewer.closeInventory()
+        for (viewerID in inventory.viewers.indices) {
+            if (inventory.viewers.size > viewerID
+                && inventory.viewers[viewerID] is Player
+                && inventory.viewers[viewerID].openInventory.topInventory == inventory) {
+                inventory.viewers[viewerID].closeInventory()
             }
         }
         InteractiveInventorySystem.removeInventory(this)

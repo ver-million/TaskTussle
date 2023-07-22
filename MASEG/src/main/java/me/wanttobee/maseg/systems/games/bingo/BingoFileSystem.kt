@@ -1,12 +1,9 @@
 package me.wanttobee.maseg.systems.games.bingo
 
 import me.wanttobee.maseg.MASEGPlugin
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.configuration.file.YamlConfiguration
-import org.bukkit.event.inventory.InventoryType
-import org.bukkit.inventory.ItemStack
 import java.io.File
 
 

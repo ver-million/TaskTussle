@@ -2,7 +2,7 @@ package me.wanttobee.maseg.systems.games.bingo
 
 import me.wanttobee.maseg.MASEGUtil
 import me.wanttobee.maseg.systems.utils.interactiveInventory.InteractiveInventory
-import me.wanttobee.maseg.systems.utils.teams.Team
+import me.wanttobee.maseg.systems.utils.teams.TeamSet
 import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
@@ -47,18 +47,19 @@ class BingoInventory(private val color:ChatColor) : InteractiveInventory(45,"${C
         return true
     }
 
-    fun generateTeamItems(game : Map<Team, BingoInventory>, seeOtherTeams : Boolean){
-        val keys = game.keys
+    fun generateTeamItems(game : TeamSet<BingoInventory>, seeOtherTeams : Boolean){
+        val allTeams = game.toPairList()
         for(index in 0 until 10 ){
-            if(index >= keys.size){
+            if(index >= allTeams.size){
                 val item = MASEGUtil.itemFactory(Material.GRAY_STAINED_GLASS, "${ChatColor.RESET}${ChatColor.GRAY}Empty Card", null)
                 this.inventory.setItem( 9*(index%5) + 8*(index/5),item)
                 continue
             }
-            val team = keys.elementAt(index)
-            val card = game[team]
+            val pair = allTeams[index]
+            val team = pair.first
+            val card = pair.second
 
-            val realAmount = card!!.getCompleteAmount()
+            val realAmount = card.getCompleteAmount()
             val amount = if(realAmount < 1) 1 else realAmount
             var memberString = "${ChatColor.GRAY}"
             val teamMembers = team.getMembers()

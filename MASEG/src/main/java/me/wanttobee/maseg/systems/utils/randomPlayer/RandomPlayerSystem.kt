@@ -39,10 +39,10 @@ object RandomPlayerSystem {
             commander.sendMessage("${ChatColor.RED} something went wrong, trying to chose ${ChatColor.GRAY}$amount${ChatColor.RED} out of the total ${ChatColor.GRAY}${noDuplicateList.size}")
             return
         }
-        recursiveRandomTeam(Team(ChatColor.WHITE),amount, noDuplicateList.random() , noDuplicateList, winningProcess, (Math.random()*6).toInt() + 2)
+        recursiveRandomTeam(Team(0),amount, noDuplicateList.random() , noDuplicateList, winningProcess, (Math.random()*6).toInt() + 2)
     }
 
-    private fun recursiveRandomTeam(team : Team, amountLeft : Int, jumpFrom : Player, playerPool : Collection<Player>,winningProcess : ((Team) -> Unit)?, iterationsLeft : Int ){
+    private fun recursiveRandomTeam(team : Team, amountLeft : Int, jumpFrom : Player, playerPool : Collection<Player>, winningProcess : ((Team) -> Unit)?, iterationsLeft : Int ){
         if(amountLeft == playerPool.size) {
             for(p in playerPool)
                 defaultChoseEffect(p, winningProcess == null)

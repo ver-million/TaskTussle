@@ -30,7 +30,7 @@ object PlayerTrackerCommand : ISystemCommand {
                     CommandBoolLeaf("saveWorldLocation", {_,_ -> }))
             )),
         {sender, pairs ->
-            val team = Team(ChatColor.WHITE)
+            val team = Team(0)
             team.addMember(pairs.first)
             team.addMember(pairs.second.first)
             val id = PlayerTrackerSystem.startTracker(

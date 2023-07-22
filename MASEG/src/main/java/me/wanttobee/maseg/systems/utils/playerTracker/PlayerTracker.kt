@@ -2,7 +2,6 @@ package me.wanttobee.maseg.systems.utils.playerTracker
 
 import me.wanttobee.maseg.MASEGPlugin
 import me.wanttobee.maseg.MASEGUtil
-import me.wanttobee.maseg.systems.utils.interactiveItem.InteractiveItem
 import me.wanttobee.maseg.systems.utils.interactiveItem.RefreshInteractiveItem
 import me.wanttobee.maseg.systems.utils.teams.ITeamObserver
 import me.wanttobee.maseg.systems.utils.teams.Team
@@ -10,9 +9,8 @@ import org.bukkit.*
 import org.bukkit.entity.Player
 import org.bukkit.inventory.meta.CompassMeta
 import org.bukkit.persistence.PersistentDataType
-import kotlin.contracts.contract
 
-class PlayerTracker(private val tracking : Team, private val refreshTime: Int,private val focusClosest: Boolean,private val saveWorldLocation: Boolean) : ITeamObserver {
+class PlayerTracker(private val tracking : Team, private val refreshTime: Int, private val focusClosest: Boolean, private val saveWorldLocation: Boolean) : ITeamObserver {
 
     private val interactiveItems : MutableList<RefreshInteractiveItem> = mutableListOf()
     private val playerLocations : MutableMap<Player, Array<Location?>> = mutableMapOf()

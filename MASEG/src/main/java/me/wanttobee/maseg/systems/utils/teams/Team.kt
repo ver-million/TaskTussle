@@ -4,17 +4,14 @@ import me.wanttobee.maseg.MASEGPlugin
 import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 
-class Team(teamColor : ChatColor) {
-    constructor(colorID : Int) : this(
-        arrayOf(ChatColor.BLUE, ChatColor.RED, ChatColor.GREEN, ChatColor.YELLOW, ChatColor.LIGHT_PURPLE, ChatColor.GOLD, ChatColor.AQUA, ChatColor.DARK_GREEN, ChatColor.DARK_PURPLE, ChatColor.DARK_AQUA)
-            [colorID%10])
+class Team(private val teamNumber : Int) {
     private val plugin = MASEGPlugin.instance
     private val members : MutableList<Player> = mutableListOf()
     private val observers : MutableList<ITeamObserver> = mutableListOf()
 
     var leaveTeamOnQuit = false
         private set
-    var color : ChatColor = ChatColor.WHITE
+    lateinit var color : ChatColor
         private set
     var leaveTeamOnDeath = false
         private set
@@ -33,8 +30,8 @@ class Team(teamColor : ChatColor) {
     }
 
     init{
-        this.color = teamColor
-        TeamSystem.addTeam(this)
+        val defaultColors = arrayOf(ChatColor.BLUE, ChatColor.RED, ChatColor.GREEN, ChatColor.YELLOW, ChatColor.LIGHT_PURPLE, ChatColor.GOLD, ChatColor.AQUA, ChatColor.DARK_GREEN, ChatColor.DARK_PURPLE, ChatColor.DARK_AQUA)
+        this.color = defaultColors[teamNumber%10]
     }
     fun subscribe(ob : ITeamObserver){
         if(!observers.contains(ob))
@@ -65,7 +62,6 @@ class Team(teamColor : ChatColor) {
     fun addMember(p : Player){
         if(members.contains(p)) return
         members.add(p)
-        //p.setDisplayName("$color${p.name}${ChatColor.RESET}")
         for(ob in observers.toList()) //it's already a list, but the toList creates a clone, so in the can modify the observer list without messing with this current loop
             ob.onAddMember(p)
     }
@@ -88,7 +84,7 @@ class Team(teamColor : ChatColor) {
         members.clear()
         for(ob in observers)
             ob.onTeamClear()
-        TeamSystem.removeTeam(this)
+        observers.clear()
     }
 
     fun applyToMembers( thing : (Player) -> Unit ){
@@ -97,7 +93,7 @@ class Team(teamColor : ChatColor) {
         }
     }
     override fun toString(): String {
-        var text ="Team $color${color.name.lowercase()}${ChatColor.RESET}: "
+        var text ="${ChatColor.GOLD}Team $color-=$teamNumber=-${ChatColor.RESET}: "
         for(member in members){
             text += member.name
             if(member != members.last()){
