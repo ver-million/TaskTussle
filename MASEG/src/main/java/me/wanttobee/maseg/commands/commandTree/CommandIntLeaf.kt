@@ -10,6 +10,7 @@ class CommandIntLeaf private constructor(arg : String,private val realTimeMin : 
     constructor(arg : String, possibilities:  (() -> Collection<Int>), effect : (Player, Int) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,null,null,null, null,possibilities,null, effect, emptyEffect )
 
     override fun validateValue(sender: Player, tailArgs: Array<String>): Int? {
+        if(tailArgs.isEmpty()) return null
         if(tailArgs.first() == ".."){
             if(emptyEffect != null) emptyEffect.invoke(sender)
             else sender.sendMessage("${ChatColor.RED}these ${ChatColor.GRAY}..${ChatColor.RED} are there to convey that you could type any number ${ChatColor.DARK_RED}(Int)${ChatColor.RED}, but not literally ${ChatColor.GRAY}..")

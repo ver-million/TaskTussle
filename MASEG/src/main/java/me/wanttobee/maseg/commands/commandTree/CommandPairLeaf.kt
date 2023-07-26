@@ -17,6 +17,7 @@ class CommandPairLeaf<T,U>(arg : String, private val firstLeaf : ICommandLeaf<T>
     }
 
     override fun validateValue(sender: Player, tailArgs: Array<String>): Pair<T,U>? {
+        if(tailArgs.isEmpty()) return null
         val firstValue : T = firstLeaf.validateValue(sender, tailArgs) ?: return null
         val secondValue : U = secondLeaf.validateValue(sender, tailArgs.copyOfRange(firstLeaf.argumentsNeeded, tailArgs.size)) ?: return null
         return Pair(firstValue,secondValue)

@@ -11,7 +11,7 @@ class Team(private val teamNumber : Int) {
 
     var leaveTeamOnQuit = false
         private set
-    lateinit var color : ChatColor
+    var color : ChatColor
         private set
     var leaveTeamOnDeath = false
         private set

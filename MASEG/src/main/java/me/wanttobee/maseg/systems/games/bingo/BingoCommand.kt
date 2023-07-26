@@ -63,8 +63,8 @@ object BingoCommand : ISystemCommand {
     private val stopTree = CommandEmptyLeaf("stop") { p -> BingoSystem.stop(p) }
 
     private val startTree = CommandPairLeaf("start",
-        CommandIntLeaf("amountOfTeams", 1, 10, {_,_->}),
-        CommandStringLeaf("bingoPool", BingoFileSystem.getAllBingoPools(), {_,_->}),
+        CommandIntLeaf("amountOfTeams", 1, 10, {_,_-> }),
+        CommandStringLeaf("bingoPool", BingoFileSystem.getAllBingoPools(), {_,_-> }),
         {p,v -> BingoSystem.startCommand(p, v.first,v.second, true) }
     )
 
@@ -75,5 +75,4 @@ object BingoCommand : ISystemCommand {
         fileTree,
         settingsTree,
     ))
-
 }

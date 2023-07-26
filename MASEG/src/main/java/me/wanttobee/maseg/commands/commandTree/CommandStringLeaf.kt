@@ -7,6 +7,7 @@ class CommandStringLeaf private constructor(arg : String,private val realTimePos
     constructor (arg : String,possibilities : Array<String>?, effect : (Player, String) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg, null, possibilities, effect, emptyEffect)
     constructor (arg : String, realTimePossibilities : () -> Array<String>, effect : (Player, String) -> Unit, emptyEffect : ((Player) -> Unit)? = null) : this(arg, realTimePossibilities,null, effect, emptyEffect)
     override fun validateValue(sender: Player, tailArgs: Array<String>): String? {
+        if(tailArgs.isEmpty()) return null
         if(tailArgs.first() == "..."){
             if(emptyEffect != null) emptyEffect.invoke(sender)
             else sender.sendMessage("${ChatColor.RED}these ${ChatColor.GRAY}...${ChatColor.RED} are there to convey that you could type any string, but not literally ${ChatColor.GRAY}...")

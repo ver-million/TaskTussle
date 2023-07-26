@@ -6,6 +6,7 @@ import org.bukkit.entity.Player
 class CommandBoolLeaf(arg : String, effect : (Player, Boolean) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : ICommandLeaf<Boolean>(arg,effect, emptyEffect) {
 
     override fun validateValue(sender: Player, tailArgs: Array<String>): Boolean? {
+        if(tailArgs.isEmpty()) return null
         val bool = tailArgs.first().toBooleanStrictOrNull() ?: run {
             sender.sendMessage("${ChatColor.GRAY}${tailArgs.first()} ${ChatColor.RED}is not a valid boolean ${ChatColor.DARK_RED}(true/false)")
             return null

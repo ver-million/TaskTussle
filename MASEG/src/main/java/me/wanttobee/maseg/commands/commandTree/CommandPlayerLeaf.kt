@@ -9,6 +9,7 @@ class CommandPlayerLeaf private constructor(arg : String,private val realTimePos
     constructor(arg: String, realTimePossiblePlayers : () -> Collection<Player>, effect : (Player, Player) -> Unit, emptyEffect : ((Player) -> Unit)? = null ) : this(arg,realTimePossiblePlayers,null,effect, emptyEffect)
 
     override fun validateValue(sender: Player, tailArgs: Array<String>): Player? {
+        if(tailArgs.isEmpty()) return null
         //var isRealPlayer = false
         //for(player in MASEGPlugin.instance.server.onlinePlayers){
         //    if(player.name.lowercase() == tailArgs.first()){
