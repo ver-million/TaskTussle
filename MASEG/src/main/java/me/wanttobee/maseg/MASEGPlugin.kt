@@ -2,10 +2,11 @@ package me.wanttobee.maseg;
 
 import me.wanttobee.maseg.commands.MGCommands
 import me.wanttobee.maseg.commands.MUCommands
-import me.wanttobee.maseg.systems.games.bingo.BingoFileSystem.createDefaultBingoPool
 import me.wanttobee.maseg.systems.games.bingo.BingoSystem
 import me.wanttobee.maseg.systems.games.manHunt.ManHuntSystem
+import me.wanttobee.maseg.systems.games.taskTussle.TaskTussleCommand
 import me.wanttobee.maseg.systems.games.taskTussle.base.TaskSystem
+import me.wanttobee.maseg.systems.games.taskTussle.tasks.ObtainTaskFiles
 import me.wanttobee.maseg.systems.utils.interactiveInventory.InteractiveInventorySystem
 import me.wanttobee.maseg.systems.utils.interactiveItem.InteractiveItemSystem
 import me.wanttobee.maseg.systems.utils.playerTracker.PlayerTrackerSystem
@@ -30,6 +31,7 @@ import org.bukkit.plugin.java.annotation.plugin.author.Author
 @Commands(
     Command(name = "mg", aliases = ["masegGames"], usage = "/mg help"),
     Command(name = "mu", aliases = ["masegUtil"], usage = "/mu help"),
+    Command(name = "taskTussle", aliases = ["tt"], usage = "/taskTussle help"),
 )
 
 @Library("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.22") //kotlin !!
@@ -48,7 +50,10 @@ class MASEGPlugin : JavaPlugin() {
         getCommand("mu")?.setExecutor(MUCommands)
         getCommand("mu")?.tabCompleter = MUCommands
 
-        createDefaultBingoPool("default")
+        getCommand("taskTussle")?.setExecutor(TaskTussleCommand)
+        getCommand("taskTussle")?.tabCompleter = TaskTussleCommand
+
+        ObtainTaskFiles.generateDefaultFolder()
         logVersions()
 
         server.pluginManager.registerEvents(ManHuntSystem, this)

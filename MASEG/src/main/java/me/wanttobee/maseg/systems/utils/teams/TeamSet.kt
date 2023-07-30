@@ -86,10 +86,15 @@ class TeamSet<T>(private val defaultValue : (Team) -> T, private val title : Str
 
     override fun toString(): String {
         var stringBuffer = "${ChatColor.GOLD}Set${ChatColor.RESET}: $title"
+        var first = true
         for((team,value) in teams){
-            var valueName = value!!::class.simpleName ?: "null"
-            if(valueName == "Unit") valueName = "-"
-            stringBuffer += "\n${ChatColor.WHITE}- $team ${ChatColor.GRAY}$valueName"
+            if(first){
+                first = false
+                var valueName = value!!::class.simpleName ?: "null"
+                if(valueName == "Unit") valueName = "-"
+                stringBuffer += "${ChatColor.GRAY} ($valueName)"
+            }
+            stringBuffer += "\n${ChatColor.WHITE}- $team"
         }
 
         return stringBuffer

@@ -45,13 +45,13 @@ class CommandPlayerLeaf private constructor(arg : String,private val realTimePos
         } else {
             if(possiblePlayers != null){
                 for (pos in possiblePlayers) {
-                    if (pos.name.lowercase().startsWith(currentlyTyping))
+                    if (pos.name.lowercase().contains(currentlyTyping))
                         list.add(pos.name)
                 }
             }
             if(realTimePossiblePlayers != null){
                 for (pos in realTimePossiblePlayers.invoke()) {
-                    if (pos.name.lowercase().startsWith(currentlyTyping))
+                    if (pos.name.lowercase().contains(currentlyTyping))
                         list.add(pos.name)
                 }
             }

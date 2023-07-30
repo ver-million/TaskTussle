@@ -1,4 +1,4 @@
-package me.wanttobee.maseg.systems.games.taskTussle.tasks
+package me.wanttobee.maseg.systems.games.taskTussle.base
 
 enum class TaskState {
     ACTIVE,

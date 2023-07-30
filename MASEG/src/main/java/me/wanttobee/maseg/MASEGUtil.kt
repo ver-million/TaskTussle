@@ -84,6 +84,8 @@ object MASEGUtil {
         if (words.size == 2 && words[1] == "minecart") {
             words = listOf(words[1], "with", words[0])
         }
+        else if(words.contains("trim")) return "Smithing Template"
+        else if(words.contains("music")) return "Music Disc"
 
         val formattedWords = words.map { word ->
             when (word) {

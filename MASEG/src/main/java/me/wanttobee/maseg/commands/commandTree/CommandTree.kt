@@ -30,7 +30,7 @@ class CommandTree(arg: String,private val branches : Array<ICommandBranch> ) : I
     override fun thisTabComplete(sender: Player, currentlyTyping: String) : List<String> {
         val list = mutableListOf<String>()
         for(branch in branches)
-            if(branch.arg.lowercase().startsWith(currentlyTyping)) list.add(branch.arg)
+            if(branch.arg.lowercase().contains(currentlyTyping)) list.add(branch.arg)
         return list
     }
 }

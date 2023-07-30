@@ -1,13 +1,15 @@
-package me.wanttobee.maseg.systems.games.taskTussle.tasks
+package me.wanttobee.maseg.systems.games.taskTussle.base
 
-import me.wanttobee.maseg.systems.games.taskTussle.base.TaskIcon
-import me.wanttobee.maseg.systems.games.taskTussle.base.ICardManager
+import me.wanttobee.maseg.MASEGPlugin
+import me.wanttobee.maseg.systems.games.taskTussle.bingo.BingoGameSystem
+import me.wanttobee.maseg.systems.utils.interactiveInventory.InteractiveInventory
 import me.wanttobee.maseg.systems.utils.teams.Team
 import org.bukkit.ChatColor
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDeathEvent
 import org.bukkit.event.entity.PlayerDeathEvent
+import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerPickupItemEvent
 import org.bukkit.inventory.ItemStack
@@ -20,16 +22,16 @@ import org.bukkit.inventory.ItemStack
 // 4 -> Locked
 // 5 -> Failed
 abstract class ITask(val associatedTeam : Team) {
-    protected abstract val icon : TaskIcon
+    abstract val icon : TaskIcon
     private var callBackCardManager : ICardManager? = null
+
     var stateCode : TaskState = TaskState.HIDDEN
         private set
 
-    fun displayIcon() : ItemStack { return icon.item }
     fun setActive(callBackCard : ICardManager){
         stateCode = TaskState.ACTIVE
         icon.setState(stateCode)
-        enable(callBackCard)
+        privateEnable(callBackCard)
     }
     fun setCompleted(){
         stateCode = TaskState.COMPLETED
@@ -58,13 +60,15 @@ abstract class ITask(val associatedTeam : Team) {
     }
 
     private fun privateDisable(){
-        //when it has never been enabled it also should be totally fine
-        val temp = callBackCardManager
-        callBackCardManager = null //.just in case you timidity want to change the callback or something, I don't know why you would, oh well,but here you go anyway
-        temp?.onTaskDisabled(this)
-        disable()
+        if(callBackCardManager == null)
+            MASEGPlugin.instance.logger.info("(ITask) ERROR: Cant do task-callback")
+        else{
+            callBackCardManager!!.onTaskDisabled(this)
+            disable()
+        }
+
     }
-    private fun enable(callBackCard : ICardManager){
+    private fun privateEnable(callBackCard : ICardManager){
         callBackCardManager = callBackCard
         enable()
     }
@@ -81,4 +85,6 @@ abstract class ITask(val associatedTeam : Team) {
     open fun checkTask(event : BlockPlaceEvent): (()->Unit)? {return null}
     open fun checkTask(event : EntityDeathEvent) : (()->Unit)? {return null}
     open fun checkTask(event : PlayerDeathEvent) : (()->Unit)? {return null}
+    open fun checkTask(event : InventoryClickEvent) : (()->Unit)? {return null}
+
 }

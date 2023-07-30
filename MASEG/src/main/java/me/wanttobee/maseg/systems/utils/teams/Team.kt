@@ -31,7 +31,7 @@ class Team(private val teamNumber : Int) {
 
     init{
         val defaultColors = arrayOf(ChatColor.BLUE, ChatColor.RED, ChatColor.GREEN, ChatColor.YELLOW, ChatColor.LIGHT_PURPLE, ChatColor.GOLD, ChatColor.AQUA, ChatColor.DARK_GREEN, ChatColor.DARK_PURPLE, ChatColor.DARK_AQUA)
-        this.color = defaultColors[teamNumber%10]
+        this.color = defaultColors[(teamNumber-1)%10]
     }
     fun subscribe(ob : ITeamObserver){
         if(!observers.contains(ob))
@@ -92,8 +92,9 @@ class Team(private val teamNumber : Int) {
             thing.invoke(member)
         }
     }
-    override fun toString(): String {
-        var text ="${ChatColor.GOLD}Team $color-=$teamNumber=-${ChatColor.RESET}: "
+
+    fun getMemberString() : String{
+        var text = ""
         for(member in members){
             text += member.name
             if(member != members.last()){
@@ -101,5 +102,11 @@ class Team(private val teamNumber : Int) {
             }
         }
         return text
+    }
+    fun getDisplayName() : String{
+        return "${color}Team $teamNumber"
+    }
+    override fun toString(): String {
+        return "${ChatColor.GOLD}Team $color-=$teamNumber=-${ChatColor.RESET}: ${getMemberString()} "
     }
 }

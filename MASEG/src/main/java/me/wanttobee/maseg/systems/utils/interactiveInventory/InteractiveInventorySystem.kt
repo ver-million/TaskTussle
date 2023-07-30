@@ -1,6 +1,8 @@
 package me.wanttobee.maseg.systems.utils.interactiveInventory
 
 import me.wanttobee.maseg.MASEGPlugin
+import me.wanttobee.maseg.systems.games.taskTussle.TaskTussleSystem
+import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -43,5 +45,11 @@ object InteractiveInventorySystem : Listener {
                 return
             }
         }
+    }
+
+    fun debugStatus(commander: Player){
+        commander.sendMessage("${ChatColor.AQUA}Interactive Inventory:")
+        for(i in inventories)
+            i.debugStatus(commander)
     }
 }

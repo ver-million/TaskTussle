@@ -12,7 +12,7 @@ class TeamMakerInventory(private val teamAmount : Int,private val maxTeamSize : 
 
     init {
         if (maxTeamSize in 1..64){
-            teams = Array(teamAmount) { i -> Team(i) }
+            teams = Array(teamAmount) { i -> Team(i+1) }
             refreshTeamVisualizer()
         }
 
@@ -26,7 +26,7 @@ class TeamMakerInventory(private val teamAmount : Int,private val maxTeamSize : 
             var item: ItemStack
             if(teamMembers.isEmpty()){
                 item = MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.color, Material.WHITE_STAINED_GLASS),
-                    "${ChatColor.BOLD}${team.color}Team ${team.color.name}","${ChatColor.DARK_GRAY} Empty",1 )
+                    team.getDisplayName(),"${ChatColor.DARK_GRAY} Empty",1 )
             }
             else{
                 var memberString = "${ChatColor.GRAY}"
@@ -36,7 +36,7 @@ class TeamMakerInventory(private val teamAmount : Int,private val maxTeamSize : 
                         memberString += ", "
                 }
                 item = MASEGUtil.itemFactory( MASEGUtil.colorMaterial(team.color, Material.WHITE_CONCRETE),
-                    "${ChatColor.BOLD}${team.color}Team ${team.color.name}",memberString,teamMembers.size , true)
+                        team.getDisplayName(),memberString,teamMembers.size , true)
             }
 
             this.itemClickEvent(item) { player ->

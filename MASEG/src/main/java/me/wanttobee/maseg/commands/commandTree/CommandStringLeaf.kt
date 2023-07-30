@@ -38,12 +38,12 @@ class CommandStringLeaf private constructor(arg : String,private val realTimePos
                 list.add("...")
         } else if(possibilities != null) {
             for (pos in possibilities) {
-                if (pos.lowercase().startsWith(currentlyTyping))
+                if (pos.lowercase().contains(currentlyTyping))
                     list.add(pos)
             }
         } else{
             for (pos in realTimePossibilities!!.invoke()) {
-                if (pos.lowercase().startsWith(currentlyTyping))
+                if (pos.lowercase().contains(currentlyTyping))
                     list.add(pos)
             }
         }

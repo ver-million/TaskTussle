@@ -45,12 +45,12 @@ object TeamSystem: Listener {
         val set = TeamSet<T>(defaultValues,title)
         for(i in 0 until setSize){
             val size = teamSize + if (i < remainingPlayers) 1 else 0
-            val team = Team(i)
+            val team = Team(i+1)
             for (j in 0 until size) {
                 team.addMember(onlinePlayers[currentPlayerIndex])
                 currentPlayerIndex++
             }
-            MASEGPlugin.instance.logger.info("MAKE 1-$i")
+            //MASEGPlugin.instance.logger.info("MAKE 1-$i")
             if(preGeneratedValues != null && preGeneratedValues.size > i)
                 set.addTeam(team, preGeneratedValues[i])
             else
@@ -65,7 +65,7 @@ object TeamSystem: Listener {
     fun <T> teamMaker(sender:Player, defaultValues : (Team) -> T, setSize: Int, title : String, maxTeamSize : Int, preGeneratedValues : Array<T>?, effect : (TeamSet<T>) -> Unit){
         if(setSize == 1){
             sender.sendMessage("${ChatColor.RED}with 1 team to chose from there isn't any choice, so it has been completed already")
-            val team = Team(0)
+            val team = Team(0+1)
             team.addMember(plugin.server.onlinePlayers)
             val set = TeamSet<T>(defaultValues,title)
             if(preGeneratedValues != null &&  preGeneratedValues.isNotEmpty())
