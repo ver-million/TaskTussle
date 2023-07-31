@@ -96,4 +96,19 @@ object TTUtil {
         }
         return formattedWords.joinToString(" ")
     }
+
+    fun getSubTitle(material : Material) : String?{
+        val name = material.name.lowercase()
+        var words = name.split("_")
+        // this doesnt contain the horns subtitle on purpose, if you want that, make a new one, otherwise it will mess up some games
+        if(words.contains("template")){
+            if(words.contains("trim"))
+                return "Template: ${words.first().capitalize()} Armor Trim"
+            return "Template: Netherite Upgrade"
+        }
+        if(words.contains("music"))
+            return "disc: ${words.last()}"
+
+        return null
+    }
 }

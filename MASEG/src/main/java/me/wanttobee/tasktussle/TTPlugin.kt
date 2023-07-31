@@ -1,12 +1,12 @@
 package me.wanttobee.tasktussle;
 
-import me.wanttobee.tasktussle.systems.utils.TTUCommands
-import me.wanttobee.tasktussle.systems.games.taskTussle.TaskTussleCommand
-import me.wanttobee.tasktussle.systems.games.taskTussle.base.TaskSystem
-import me.wanttobee.tasktussle.systems.games.taskTussle.tasks.ObtainTaskFiles
-import me.wanttobee.tasktussle.systems.utils.interactiveInventory.InteractiveInventorySystem
-import me.wanttobee.tasktussle.systems.utils.interactiveItem.InteractiveItemSystem
-import me.wanttobee.tasktussle.systems.utils.teams.TeamSystem
+import me.wanttobee.tasktussle.utils.TTUCommands
+import me.wanttobee.tasktussle.taskTussleSystem.TaskTussleCommand
+import me.wanttobee.tasktussle.taskTussleSystem.tasks.misc.TaskSystem
+import me.wanttobee.tasktussle.taskTussleSystem.tasks.obtainTask.ObtainTaskFiles
+import me.wanttobee.tasktussle.utils.interactiveInventory.InteractiveInventorySystem
+import me.wanttobee.tasktussle.utils.interactiveItem.InteractiveItemSystem
+import me.wanttobee.tasktussle.utils.teams.TeamSystem
 import org.bukkit.ChatColor
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.plugin.java.annotation.command.Command
