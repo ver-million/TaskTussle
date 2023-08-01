@@ -8,7 +8,8 @@ import me.wanttobee.tasktussle.utils.teams.TeamCommand
 import org.bukkit.ChatColor
 
 
-object TTUCommands : ICommandSystem {
+object
+TTUCommands : ICommandSystem {
     override val helpText: String = "${ChatColor.GRAY}/ttu${ChatColor.WHITE} for Task Tussle Utilities"
 
     override val systemCommands : Array<ISystemCommand> = arrayOf(
